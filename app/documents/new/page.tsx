@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
@@ -19,6 +19,68 @@ export default function NewDocumentPage() {
   const [items, setItems] = useState<ProductItem[]>([]);
   const [barcode, setBarcode] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showScanner, setShowScanner] = useState(false);
+  const [scannerError, setScannerError] = useState("");
+  const scannerRef = useRef<any>(null);
+
+  // Cleanup scanner on unmount
+  useEffect(() => {
+    return () => {
+      if (scannerRef.current) {
+        scannerRef.current.stop().catch(() => {});
+      }
+    };
+  }, []);
+
+  // Initialize scanner when modal opens
+  useEffect(() => {
+    if (showScanner && typeof window !== 'undefined') {
+      startScanner();
+    } else if (!showScanner && scannerRef.current) {
+      scannerRef.current.stop().catch(() => {});
+      scannerRef.current = null;
+    }
+  }, [showScanner]);
+
+  const startScanner = async () => {
+    try {
+      setScannerError("");
+      const { Html5Qrcode } = await import('html5-qrcode');
+
+      const html5QrCode = new Html5Qrcode("barcode-scanner");
+      scannerRef.current = html5QrCode;
+
+      const config = {
+        fps: 10,
+        qrbox: { width: 250, height: 250 },
+        formatsToSupport: [13], // EAN-13
+      };
+
+      await html5QrCode.start(
+        { facingMode: "environment" },
+        config,
+        (decodedText) => {
+          // Sukces skanowania
+          if (decodedText.length === 13) {
+            setBarcode(decodedText);
+            setShowScanner(false);
+
+            // Automatycznie dodaj produkt
+            setTimeout(() => {
+              const submitBtn = document.querySelector('button[type="submit"]') as HTMLButtonElement;
+              if (submitBtn) submitBtn.click();
+            }, 100);
+          }
+        },
+        () => {
+          // Ignoruj błędy skanowania (normalne gdy szukamy kodu)
+        }
+      );
+    } catch (err: any) {
+      console.error("Scanner error:", err);
+      setScannerError("Nie udało się uruchomić kamery. Sprawdź uprawnienia.");
+    }
+  };
 
   const handleBarcodeSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,7 +118,7 @@ export default function NewDocumentPage() {
         }
         setBarcode("");
       } else {
-        alert("Produkt nie znaleziony. Czy chcesz dodać nowy produkt do bazy?");
+        alert("Produkt nie znaleziony. Dodaj nowy produkt w bazie produktów.");
       }
     } catch (error) {
       console.error("Error finding product:", error);
@@ -208,6 +270,13 @@ export default function NewDocumentPage() {
                   maxLength={13}
                 />
                 <button
+                  type="button"
+                  onClick={() => setShowScanner(true)}
+                  className="px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors flex items-center gap-2"
+                >
+                  📷 Kamera
+                </button>
+                <button
                   type="submit"
                   className="px-6 py-3 bg-cyan-600 hover:bg-cyan-700 text-white font-medium rounded-lg transition-colors"
                 >
@@ -288,6 +357,55 @@ export default function NewDocumentPage() {
           </div>
         </form>
       </div>
+
+      {/* Modal skanera */}
+      {showScanner && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl max-w-lg w-full overflow-hidden">
+            <div className="bg-cyan-700 px-6 py-4 flex justify-between items-center">
+              <h3 className="text-white text-xl font-bold">
+                Skanuj kod kreskowy
+              </h3>
+              <button
+                onClick={() => setShowScanner(false)}
+                className="text-white hover:text-cyan-200 text-2xl font-bold"
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="p-6">
+              {scannerError ? (
+                <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                  <p>{scannerError}</p>
+                  <p className="text-sm mt-2">
+                    Upewnij się że zezwoliłeś na dostęp do kamery w przeglądarce.
+                  </p>
+                </div>
+              ) : (
+                <>
+                  <div
+                    id="barcode-scanner"
+                    className="w-full rounded-lg overflow-hidden bg-gray-900"
+                  ></div>
+                  <p className="text-gray-600 text-sm mt-4 text-center">
+                    Skieruj kamerę na kod kreskowy EAN-13
+                  </p>
+                </>
+              )}
+            </div>
+
+            <div className="px-6 pb-6">
+              <button
+                onClick={() => setShowScanner(false)}
+                className="w-full px-4 py-3 bg-gray-300 hover:bg-gray-400 text-gray-800 font-medium rounded-lg transition-colors"
+              >
+                Zamknij
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
