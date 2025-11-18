@@ -2,227 +2,180 @@
 
 Nowoczesna aplikacja webowa do zarządzania dokumentami magazynowymi (WZ - Wydanie Zewnętrzne).
 
+![Next.js](https://img.shields.io/badge/Next.js-16-black)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-blue)
+![Prisma](https://img.shields.io/badge/Prisma-6-2D3748)
+![Tailwind](https://img.shields.io/badge/Tailwind-4-38B2AC)
+
 ## ✨ Funkcjonalności
 
 - 📝 **Tworzenie dokumentów WZ** - zarządzanie wydaniami magazynowymi
-- 🔍 **Skanowanie kodów kreskowych** - EAN-13
-- 📊 **Baza produktów** - wyszukiwanie i zarządzanie
-- 📄 **Generowanie PDF** - profesjonalne dokumenty
-- 📈 **Eksport Excel** - analiza danych
+- 🔍 **Skanowanie kodów kreskowych** - obsługa EAN-13
+- 📊 **Baza produktów** - wyszukiwanie i zarządzanie produktami
+- 📄 **Generowanie PDF** - profesjonalne dokumenty magazynowe
+- 📈 **Eksport Excel** - analiza danych w arkuszach
 - 📱 **Responsywny design** - działa na wszystkich urządzeniach
 - 🎨 **Nowoczesny UI** - gradient glassmorphic design
+- 💾 **Baza danych w chmurze** - Turso (SQLite) lub własna
 
-## 🚀 Szybki start (Development)
-
-### 1. Instalacja
+## 🚀 Szybki start (Lokalne środowisko)
 
 ```bash
-# Klonuj repozytorium
+# 1. Klonuj repozytorium
 git clone https://github.com/klebanek/elmarocr.git
 cd elmarocr
 
-# Zainstaluj zależności
+# 2. Zainstaluj zależności
 npm install
-```
 
-### 2. Konfiguracja bazy danych
-
-```bash
-# Utwórz plik .env
+# 3. Utwórz plik .env
 cp .env.example .env
+# Edytuj .env i dodaj DATABASE_URL
 
-# Zastosuj migracje
+# 4. Zastosuj migracje
 npx prisma db push
 
-# (Opcjonalnie) Dodaj przykładowe dane
+# 5. (Opcjonalnie) Dodaj przykładowe dane
 npm run db:seed
-```
 
-### 3. Uruchom aplikację
-
-```bash
+# 6. Uruchom development server
 npm run dev
 ```
 
 Otwórz [http://localhost:3000](http://localhost:3000) w przeglądarce.
 
-## 🌐 Deploy na Vercel (Wersja testowa)
+## 📦 Deployment na własnym serwerze
 
-### Krok 1: Utwórz bazę danych Turso (darmowa)
+### Szybki deployment (1 komenda)
 
 ```bash
-# Zainstaluj Turso CLI
-curl -sSfL https://get.tur.so/install.sh | bash
-
-# Zaloguj się
-turso auth login
-
-# Utwórz bazę danych
-turso db create elmar-warehouse
-
-# Pobierz URL bazy danych
-turso db show elmar-warehouse --url
-
-# Utwórz token autoryzacji
-turso db tokens create elmar-warehouse
+# Na serwerze, po sklonowaniu repozytorium:
+./deploy.sh
 ```
 
-Zapisz **URL** i **TOKEN** - będą potrzebne w następnym kroku.
+### Lub ręcznie krok po kroku:
 
-### Krok 2: Deploy na Vercel
+**📖 Zobacz kompletną instrukcję:** [DEPLOYMENT.md](./DEPLOYMENT.md)
 
-#### Opcja A: Deploy przez przeglądarkę (Łatwiejsze)
+**Krótko:**
 
-1. **Otwórz [Vercel](https://vercel.com)**
-2. **Kliknij "Add New" → "Project"**
-3. **Importuj repozytorium GitHub:**
-   - Wybierz `klebanek/elmarocr`
-   - Kliknij "Import"
-
-4. **Skonfiguruj zmienne środowiskowe:**
-   - Kliknij "Environment Variables"
-   - Dodaj:
-     ```
-     DATABASE_URL = libsql://[your-database-url]
-     TURSO_AUTH_TOKEN = [your-auth-token]
-     ```
-   - Zastąp `[your-database-url]` i `[your-auth-token]` wartościami z Kroku 1
-
-5. **Kliknij "Deploy"**
-
-6. **Po deploymencie, zastosuj migracje:**
+1. **Utwórz bazę danych Turso** (darmowa, w chmurze):
    ```bash
-   # Użyj DATABASE_URL z Turso
-   DATABASE_URL="libsql://[your-url]" TURSO_AUTH_TOKEN="[your-token]" npx prisma db push
-
-   # Dodaj przykładowe dane
-   DATABASE_URL="libsql://[your-url]" TURSO_AUTH_TOKEN="[your-token]" npm run db:seed
+   turso db create elmar-warehouse
+   turso db show elmar-warehouse --url
+   turso db tokens create elmar-warehouse
    ```
 
-#### Opcja B: Deploy przez CLI
+2. **Skonfiguruj `.env`** na serwerze:
+   ```bash
+   DATABASE_URL="libsql://your-db.turso.io"
+   TURSO_AUTH_TOKEN="your-token"
+   NODE_ENV="production"
+   PORT=3000
+   ```
 
-```bash
-# Zainstaluj Vercel CLI
-npm install -g vercel
+3. **Zbuduj i uruchom**:
+   ```bash
+   npm install
+   npx prisma db push
+   npm run build
 
-# Zaloguj się
-vercel login
+   # Z PM2 (zalecane):
+   pm2 start npm --name elmar-warehouse -- start
+   ```
 
-# Deploy
-vercel
+4. **Gotowe!** Aplikacja działa na `http://twoj-serwer:3000`
 
-# Dodaj zmienne środowiskowe
-vercel env add DATABASE_URL
-# Wklej: libsql://[your-database-url]
+Pełna dokumentacja z Nginx, SSL, monitoringiem: **[DEPLOYMENT.md](./DEPLOYMENT.md)**
 
-vercel env add TURSO_AUTH_TOKEN
-# Wklej: [your-auth-token]
+## 🛠️ Technologie
 
-# Zrób production deployment
-vercel --prod
-```
-
-### Krok 3: Zastosuj migracje bazy danych
-
-Po deployment:
-
-```bash
-# Połącz się z bazą Turso
-turso db shell elmar-warehouse
-
-# Aplikuj migracje ręcznie lub:
-# Użyj prisma db push z production DATABASE_URL
-```
-
-**Lub** użyj **Vercel CLI**:
-
-```bash
-# Uruchom seed script w produkcji
-vercel env pull .env.production
-npm run db:push
-npm run db:seed
-```
+- **[Next.js 16](https://nextjs.org/)** - React framework z App Router
+- **[TypeScript](https://www.typescriptlang.org/)** - Type-safe development
+- **[Tailwind CSS 4](https://tailwindcss.com/)** - Utility-first CSS
+- **[Prisma](https://www.prisma.io/)** - Next-generation ORM
+- **[Turso](https://turso.tech/)** - SQLite w chmurze (lub lokalna SQLite)
+- **[jsPDF](https://github.com/parallax/jsPDF)** - Generowanie PDF
+- **[SheetJS](https://sheetjs.com/)** - Eksport do Excel
 
 ## 📂 Struktura projektu
 
 ```
 elmarocr/
 ├── app/
-│   ├── api/              # API endpoints
-│   │   ├── documents/    # Dokumenty WZ
-│   │   └── products/     # Produkty
+│   ├── api/              # API endpoints (REST)
+│   │   ├── documents/    # CRUD dla dokumentów WZ
+│   │   └── products/     # CRUD dla produktów
 │   ├── documents/        # Strony dokumentów
-│   ├── products/         # Strona produktów
-│   └── page.tsx          # Strona główna
+│   │   ├── [id]/         # Szczegóły + PDF/Excel export
+│   │   ├── new/          # Tworzenie nowego dokumentu
+│   │   └── page.tsx      # Lista dokumentów
+│   ├── products/         # Zarządzanie bazą produktów
+│   └── page.tsx          # Strona główna (dashboard)
 ├── lib/
-│   └── prisma.ts         # Klient Prisma
+│   └── prisma.ts         # Klient Prisma + konfiguracja
 ├── prisma/
-│   ├── schema.prisma     # Schemat bazy
-│   ├── seed.ts           # Dane testowe
-│   └── migrations/       # Migracje
-└── public/               # Pliki statyczne
+│   ├── schema.prisma     # Schemat bazy danych
+│   ├── seed.ts           # Dane testowe (20 produktów)
+│   └── migrations/       # Migracje bazy danych
+├── public/               # Pliki statyczne
+├── DEPLOYMENT.md         # 📖 Pełna instrukcja deploymentu
+├── deploy.sh            # 🚀 Automatyczny skrypt deploymentu
+└── .env.example          # Przykładowa konfiguracja
 ```
-
-## 🛠️ Technologie
-
-- **Next.js 16** - React framework
-- **TypeScript** - Type safety
-- **Tailwind CSS** - Styling
-- **Prisma** - ORM
-- **SQLite/Turso** - Baza danych
-- **jsPDF** - Generowanie PDF
-- **XLSX** - Eksport Excel
-
-## 📱 PWA (Progressive Web App)
-
-Aplikacja może działać offline po zainstalowaniu:
-
-1. Otwórz aplikację w przeglądarce mobilnej
-2. Kliknij "Dodaj do ekranu głównego"
-3. Aplikacja zainstaluje się jak natywna
-
-*Uwaga: PWA jest obecnie wyłączone w konfiguracji. Aby włączyć, odkomentuj kod w `next.config.ts`*
 
 ## 🔧 Dostępne komendy
 
 ```bash
-npm run dev          # Uruchom development server
-npm run build        # Zbuduj aplikację
+npm run dev          # Uruchom development server (localhost:3000)
+npm run build        # Zbuduj aplikację produkcyjną
 npm run start        # Uruchom production server
-npm run lint         # Sprawdź kod
-npm run db:push      # Aplikuj zmiany w bazie
-npm run db:seed      # Dodaj przykładowe dane
+npm run lint         # Sprawdź kod (ESLint)
+npm run db:push      # Aplikuj zmiany w schemacie bazy
+npm run db:seed      # Dodaj przykładowe dane testowe
+./deploy.sh          # Automatyczny deployment (na serwerze)
 ```
+
+## 📸 Screenshot
+
+> *Wkrótce - screenshoty aplikacji*
 
 ## 🐛 Rozwiązywanie problemów
 
-### Problem: Błąd połączenia z bazą danych
+### Błąd połączenia z bazą danych
 
-**Rozwiązanie:**
 ```bash
-# Sprawdź czy DATABASE_URL jest poprawny
+# Sprawdź DATABASE_URL
 echo $DATABASE_URL
 
 # Zregeneruj Prisma Client
 npx prisma generate
+npx prisma db push
 ```
 
-### Problem: Build error na Vercel
+### Aplikacja nie buduje się
 
-**Rozwiązanie:**
-- Upewnij się że zmienne środowiskowe są ustawione
-- Sprawdź logi: `vercel logs`
-- Zweryfikuj czy Turso database działa: `turso db show elmar-warehouse`
-
-### Problem: Seed script nie działa
-
-**Rozwiązanie:**
 ```bash
-# Upewnij się że baza jest pusta lub
-# Usuń istniejące dane przed seedowaniem
-npx prisma db push --force-reset
-npm run db:seed
+# Wyczyść cache i przebuduj
+rm -rf .next node_modules
+npm install
+npm run build
 ```
+
+### Problemy z PM2
+
+```bash
+# Zobacz logi
+pm2 logs elmar-warehouse
+
+# Restart
+pm2 restart elmar-warehouse
+
+# Status
+pm2 status
+```
+
+**Więcej:** [DEPLOYMENT.md - Troubleshooting](./DEPLOYMENT.md#-rozwiązywanie-problemów)
 
 ## 📄 Licencja
 
@@ -231,10 +184,10 @@ Projekt stworzony dla ELMAR.
 ## 🤝 Wsparcie
 
 Jeśli napotkasz problemy:
-1. Sprawdź [Issues](https://github.com/klebanek/elmarocr/issues)
-2. Utwórz nowy Issue z opisem problemu
-3. Dołącz logi błędów i kroki do reprodukcji
+1. Sprawdź [DEPLOYMENT.md](./DEPLOYMENT.md)
+2. Zobacz [Issues](https://github.com/klebanek/elmarocr/issues)
+3. Utwórz nowy Issue z opisem problemu
 
 ---
 
-**Stworzone z ❤️ przy użyciu Next.js i Claude**
+**Stworzone z ❤️ przy użyciu Next.js 16 i Claude**
