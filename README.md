@@ -1,36 +1,240 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 📦 ELMAR Warehouse - System Magazynowy
 
-## Getting Started
+Nowoczesna aplikacja webowa do zarządzania dokumentami magazynowymi (WZ - Wydanie Zewnętrzne).
 
-First, run the development server:
+## ✨ Funkcjonalności
+
+- 📝 **Tworzenie dokumentów WZ** - zarządzanie wydaniami magazynowymi
+- 🔍 **Skanowanie kodów kreskowych** - EAN-13
+- 📊 **Baza produktów** - wyszukiwanie i zarządzanie
+- 📄 **Generowanie PDF** - profesjonalne dokumenty
+- 📈 **Eksport Excel** - analiza danych
+- 📱 **Responsywny design** - działa na wszystkich urządzeniach
+- 🎨 **Nowoczesny UI** - gradient glassmorphic design
+
+## 🚀 Szybki start (Development)
+
+### 1. Instalacja
+
+```bash
+# Klonuj repozytorium
+git clone https://github.com/klebanek/elmarocr.git
+cd elmarocr
+
+# Zainstaluj zależności
+npm install
+```
+
+### 2. Konfiguracja bazy danych
+
+```bash
+# Utwórz plik .env
+cp .env.example .env
+
+# Zastosuj migracje
+npx prisma db push
+
+# (Opcjonalnie) Dodaj przykładowe dane
+npm run db:seed
+```
+
+### 3. Uruchom aplikację
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Otwórz [http://localhost:3000](http://localhost:3000) w przeglądarce.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🌐 Deploy na Vercel (Wersja testowa)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Krok 1: Utwórz bazę danych Turso (darmowa)
 
-## Learn More
+```bash
+# Zainstaluj Turso CLI
+curl -sSfL https://get.tur.so/install.sh | bash
 
-To learn more about Next.js, take a look at the following resources:
+# Zaloguj się
+turso auth login
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+# Utwórz bazę danych
+turso db create elmar-warehouse
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+# Pobierz URL bazy danych
+turso db show elmar-warehouse --url
 
-## Deploy on Vercel
+# Utwórz token autoryzacji
+turso db tokens create elmar-warehouse
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Zapisz **URL** i **TOKEN** - będą potrzebne w następnym kroku.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Krok 2: Deploy na Vercel
+
+#### Opcja A: Deploy przez przeglądarkę (Łatwiejsze)
+
+1. **Otwórz [Vercel](https://vercel.com)**
+2. **Kliknij "Add New" → "Project"**
+3. **Importuj repozytorium GitHub:**
+   - Wybierz `klebanek/elmarocr`
+   - Kliknij "Import"
+
+4. **Skonfiguruj zmienne środowiskowe:**
+   - Kliknij "Environment Variables"
+   - Dodaj:
+     ```
+     DATABASE_URL = libsql://[your-database-url]
+     TURSO_AUTH_TOKEN = [your-auth-token]
+     ```
+   - Zastąp `[your-database-url]` i `[your-auth-token]` wartościami z Kroku 1
+
+5. **Kliknij "Deploy"**
+
+6. **Po deploymencie, zastosuj migracje:**
+   ```bash
+   # Użyj DATABASE_URL z Turso
+   DATABASE_URL="libsql://[your-url]" TURSO_AUTH_TOKEN="[your-token]" npx prisma db push
+
+   # Dodaj przykładowe dane
+   DATABASE_URL="libsql://[your-url]" TURSO_AUTH_TOKEN="[your-token]" npm run db:seed
+   ```
+
+#### Opcja B: Deploy przez CLI
+
+```bash
+# Zainstaluj Vercel CLI
+npm install -g vercel
+
+# Zaloguj się
+vercel login
+
+# Deploy
+vercel
+
+# Dodaj zmienne środowiskowe
+vercel env add DATABASE_URL
+# Wklej: libsql://[your-database-url]
+
+vercel env add TURSO_AUTH_TOKEN
+# Wklej: [your-auth-token]
+
+# Zrób production deployment
+vercel --prod
+```
+
+### Krok 3: Zastosuj migracje bazy danych
+
+Po deployment:
+
+```bash
+# Połącz się z bazą Turso
+turso db shell elmar-warehouse
+
+# Aplikuj migracje ręcznie lub:
+# Użyj prisma db push z production DATABASE_URL
+```
+
+**Lub** użyj **Vercel CLI**:
+
+```bash
+# Uruchom seed script w produkcji
+vercel env pull .env.production
+npm run db:push
+npm run db:seed
+```
+
+## 📂 Struktura projektu
+
+```
+elmarocr/
+├── app/
+│   ├── api/              # API endpoints
+│   │   ├── documents/    # Dokumenty WZ
+│   │   └── products/     # Produkty
+│   ├── documents/        # Strony dokumentów
+│   ├── products/         # Strona produktów
+│   └── page.tsx          # Strona główna
+├── lib/
+│   └── prisma.ts         # Klient Prisma
+├── prisma/
+│   ├── schema.prisma     # Schemat bazy
+│   ├── seed.ts           # Dane testowe
+│   └── migrations/       # Migracje
+└── public/               # Pliki statyczne
+```
+
+## 🛠️ Technologie
+
+- **Next.js 16** - React framework
+- **TypeScript** - Type safety
+- **Tailwind CSS** - Styling
+- **Prisma** - ORM
+- **SQLite/Turso** - Baza danych
+- **jsPDF** - Generowanie PDF
+- **XLSX** - Eksport Excel
+
+## 📱 PWA (Progressive Web App)
+
+Aplikacja może działać offline po zainstalowaniu:
+
+1. Otwórz aplikację w przeglądarce mobilnej
+2. Kliknij "Dodaj do ekranu głównego"
+3. Aplikacja zainstaluje się jak natywna
+
+*Uwaga: PWA jest obecnie wyłączone w konfiguracji. Aby włączyć, odkomentuj kod w `next.config.ts`*
+
+## 🔧 Dostępne komendy
+
+```bash
+npm run dev          # Uruchom development server
+npm run build        # Zbuduj aplikację
+npm run start        # Uruchom production server
+npm run lint         # Sprawdź kod
+npm run db:push      # Aplikuj zmiany w bazie
+npm run db:seed      # Dodaj przykładowe dane
+```
+
+## 🐛 Rozwiązywanie problemów
+
+### Problem: Błąd połączenia z bazą danych
+
+**Rozwiązanie:**
+```bash
+# Sprawdź czy DATABASE_URL jest poprawny
+echo $DATABASE_URL
+
+# Zregeneruj Prisma Client
+npx prisma generate
+```
+
+### Problem: Build error na Vercel
+
+**Rozwiązanie:**
+- Upewnij się że zmienne środowiskowe są ustawione
+- Sprawdź logi: `vercel logs`
+- Zweryfikuj czy Turso database działa: `turso db show elmar-warehouse`
+
+### Problem: Seed script nie działa
+
+**Rozwiązanie:**
+```bash
+# Upewnij się że baza jest pusta lub
+# Usuń istniejące dane przed seedowaniem
+npx prisma db push --force-reset
+npm run db:seed
+```
+
+## 📄 Licencja
+
+Projekt stworzony dla ELMAR.
+
+## 🤝 Wsparcie
+
+Jeśli napotkasz problemy:
+1. Sprawdź [Issues](https://github.com/klebanek/elmarocr/issues)
+2. Utwórz nowy Issue z opisem problemu
+3. Dołącz logi błędów i kroki do reprodukcji
+
+---
+
+**Stworzone z ❤️ przy użyciu Next.js i Claude**
