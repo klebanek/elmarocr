@@ -86,43 +86,37 @@ export default function NewDocumentPage() {
     e.preventDefault();
     if (!barcode.trim()) return;
 
-    try {
-      // Szukaj produktu po kodzie kreskowym
-      const response = await fetch(`/api/products?barcode=${barcode}`);
-      const product = await response.json();
+    const { getProductByBarcode } = await import('@/lib/storage');
+    const product = getProductByBarcode(barcode);
 
-      if (product && product.id) {
-        // Sprawdź czy produkt już jest na liście
-        const existingItem = items.find((item) => item.productId === product.id);
+    if (product) {
+      // Sprawdź czy produkt już jest na liście
+      const existingItem = items.find((item) => item.productId === product.id);
 
-        if (existingItem) {
-          // Zwiększ ilość
-          setItems(
-            items.map((item) =>
-              item.productId === product.id
-                ? { ...item, quantity: item.quantity + 1 }
-                : item
-            )
-          );
-        } else {
-          // Dodaj nowy produkt
-          setItems([
-            ...items,
-            {
-              productId: product.id,
-              productName: product.name,
-              barcode: product.barcode,
-              quantity: 1,
-            },
-          ]);
-        }
-        setBarcode("");
+      if (existingItem) {
+        // Zwiększ ilość
+        setItems(
+          items.map((item) =>
+            item.productId === product.id
+              ? { ...item, quantity: item.quantity + 1 }
+              : item
+          )
+        );
       } else {
-        alert("Produkt nie znaleziony. Dodaj nowy produkt w bazie produktów.");
+        // Dodaj nowy produkt
+        setItems([
+          ...items,
+          {
+            productId: product.id,
+            productName: product.name,
+            barcode: product.barcode,
+            quantity: 1,
+          },
+        ]);
       }
-    } catch (error) {
-      console.error("Error finding product:", error);
-      alert("Błąd podczas wyszukiwania produktu");
+      setBarcode("");
+    } else {
+      alert("Produkt nie znaleziony. Dodaj nowy produkt w bazie produktów.");
     }
   };
 
@@ -156,28 +150,18 @@ export default function NewDocumentPage() {
 
     setLoading(true);
     try {
-      const response = await fetch("/api/documents", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          warehouseWorker,
-          date,
-          notes,
-          items: items.map((item) => ({
-            productId: item.productId,
-            quantity: item.quantity,
-          })),
-        }),
-      });
+      const { createDocument } = await import('@/lib/storage');
+      const document = createDocument(
+        warehouseWorker,
+        date,
+        notes || null,
+        items.map((item) => ({
+          productId: item.productId,
+          quantity: item.quantity,
+        }))
+      );
 
-      if (response.ok) {
-        const document = await response.json();
-        router.push(`/documents/${document.id}`);
-      } else {
-        alert("Błąd podczas tworzenia dokumentu");
-      }
+      router.push(`/documents?id=${document.id}`);
     } catch (error) {
       console.error("Error creating document:", error);
       alert("Błąd podczas tworzenia dokumentu");

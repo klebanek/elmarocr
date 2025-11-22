@@ -27,12 +27,9 @@ export default function ProductsPage() {
 
   const fetchProducts = async (search = "") => {
     try {
-      const url = search
-        ? `/api/products?search=${encodeURIComponent(search)}`
-        : "/api/products";
-      const response = await fetch(url);
-      const data = await response.json();
-      setProducts(Array.isArray(data) ? data : []);
+      const { getProducts, searchProducts } = await import('@/lib/storage');
+      const data = search ? searchProducts(search) : getProducts();
+      setProducts(data);
     } catch (error) {
       console.error("Error fetching products:", error);
     } finally {
@@ -59,29 +56,14 @@ export default function ProductsPage() {
     }
 
     try {
-      const response = await fetch("/api/products", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          ...newProduct,
-          isManual: true,
-        }),
-      });
-
-      if (response.ok) {
-        setNewProduct({ barcode: "", name: "" });
-        setShowAddForm(false);
-        fetchProducts();
-        alert("Produkt dodany pomyślnie!");
-      } else {
-        const error = await response.json();
-        alert(error.error || "Błąd podczas dodawania produktu");
-      }
-    } catch (error) {
-      console.error("Error adding product:", error);
-      alert("Błąd podczas dodawania produktu");
+      const { addProduct } = await import('@/lib/storage');
+      addProduct(newProduct.barcode, newProduct.name, true);
+      setNewProduct({ barcode: "", name: "" });
+      setShowAddForm(false);
+      fetchProducts();
+      alert("Produkt dodany pomyślnie!");
+    } catch (error: any) {
+      alert(error.message || "Błąd podczas dodawania produktu");
     }
   };
 
