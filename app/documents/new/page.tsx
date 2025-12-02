@@ -21,6 +21,9 @@ export default function NewDocumentPage() {
   const [loading, setLoading] = useState(false);
   const [showScanner, setShowScanner] = useState(false);
   const [scannerError, setScannerError] = useState("");
+  const [showAddProduct, setShowAddProduct] = useState(false);
+  const [newProductName, setNewProductName] = useState("");
+  const [newProductBarcode, setNewProductBarcode] = useState("");
   const scannerRef = useRef<any>(null);
 
   // Cleanup scanner on unmount
@@ -45,7 +48,7 @@ export default function NewDocumentPage() {
   const startScanner = async () => {
     try {
       setScannerError("");
-      const { Html5Qrcode } = await import('html5-qrcode');
+      const { Html5Qrcode, Html5QrcodeSupportedFormats } = await import('html5-qrcode');
 
       const html5QrCode = new Html5Qrcode("barcode-scanner");
       scannerRef.current = html5QrCode;
@@ -53,24 +56,30 @@ export default function NewDocumentPage() {
       const config = {
         fps: 10,
         qrbox: { width: 250, height: 250 },
-        formatsToSupport: [13], // EAN-13
+        formatsToSupport: [
+          Html5QrcodeSupportedFormats.EAN_13,
+          Html5QrcodeSupportedFormats.EAN_8,
+          Html5QrcodeSupportedFormats.CODE_128,
+          Html5QrcodeSupportedFormats.CODE_39,
+        ],
       };
 
       await html5QrCode.start(
         { facingMode: "environment" },
         config,
         (decodedText) => {
-          // Sukces skanowania
-          if (decodedText.length === 13) {
-            setBarcode(decodedText);
-            setShowScanner(false);
+          // Sukces skanowania - dodaj kod do pola input
+          setBarcode(decodedText);
+          setShowScanner(false);
 
-            // Automatycznie dodaj produkt
-            setTimeout(() => {
-              const submitBtn = document.querySelector('button[type="submit"]') as HTMLButtonElement;
-              if (submitBtn) submitBtn.click();
-            }, 100);
-          }
+          // Automatycznie dodaj produkt po zamknięciu skanera
+          setTimeout(() => {
+            const form = document.querySelector('form') as HTMLFormElement;
+            if (form) {
+              const event = new Event('submit', { bubbles: true, cancelable: true });
+              form.dispatchEvent(event);
+            }
+          }, 100);
         },
         () => {
           // Ignoruj błędy skanowania (normalne gdy szukamy kodu)
@@ -116,7 +125,38 @@ export default function NewDocumentPage() {
       }
       setBarcode("");
     } else {
-      alert("Produkt nie znaleziony. Dodaj nowy produkt w bazie produktów.");
+      // Produkt nie znaleziony - zaproponuj dodanie
+      setNewProductBarcode(barcode);
+      setShowAddProduct(true);
+    }
+  };
+
+  const handleAddNewProduct = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newProductBarcode.trim() || !newProductName.trim()) return;
+
+    try {
+      const { addProduct } = await import('@/lib/storage');
+      const newProduct = addProduct(newProductBarcode, newProductName, true);
+
+      // Dodaj produkt do dokumentu
+      setItems([
+        ...items,
+        {
+          productId: newProduct.id,
+          productName: newProduct.name,
+          barcode: newProduct.barcode,
+          quantity: 1,
+        },
+      ]);
+
+      // Reset
+      setShowAddProduct(false);
+      setNewProductName("");
+      setNewProductBarcode("");
+      setBarcode("");
+    } catch (error: any) {
+      alert(error.message || "Błąd podczas dodawania produktu");
     }
   };
 
@@ -387,6 +427,86 @@ export default function NewDocumentPage() {
                 Zamknij
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal dodawania nowego produktu */}
+      {showAddProduct && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl max-w-lg w-full overflow-hidden">
+            <div className="bg-cyan-700 px-6 py-4 flex justify-between items-center">
+              <h3 className="text-white text-xl font-bold">
+                Dodaj nowy produkt
+              </h3>
+              <button
+                onClick={() => {
+                  setShowAddProduct(false);
+                  setNewProductName("");
+                  setNewProductBarcode("");
+                }}
+                className="text-white hover:text-cyan-200 text-2xl font-bold"
+              >
+                ×
+              </button>
+            </div>
+
+            <form onSubmit={handleAddNewProduct} className="p-6">
+              <p className="text-gray-700 mb-4">
+                Produkt o kodzie <strong>{newProductBarcode}</strong> nie został znaleziony w bazie.
+              </p>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-gray-700 mb-2 font-medium">
+                    Kod kreskowy
+                  </label>
+                  <input
+                    type="text"
+                    value={newProductBarcode}
+                    onChange={(e) => setNewProductBarcode(e.target.value)}
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-cyan-400"
+                    pattern="[0-9]{8,13}"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-gray-700 mb-2 font-medium">
+                    Nazwa produktu *
+                  </label>
+                  <input
+                    type="text"
+                    value={newProductName}
+                    onChange={(e) => setNewProductName(e.target.value)}
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-cyan-400"
+                    placeholder="np. Dorsz mrożony 500g"
+                    required
+                    autoFocus
+                  />
+                </div>
+              </div>
+
+              <div className="flex gap-3 mt-6">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowAddProduct(false);
+                    setNewProductName("");
+                    setNewProductBarcode("");
+                  }}
+                  className="flex-1 px-4 py-3 bg-gray-300 hover:bg-gray-400 text-gray-800 font-medium rounded-lg transition-colors"
+                >
+                  Anuluj
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 px-4 py-3 bg-cyan-600 hover:bg-cyan-700 text-white font-medium rounded-lg transition-colors"
+                >
+                  Dodaj i użyj
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
