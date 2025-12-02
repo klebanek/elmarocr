@@ -91,8 +91,11 @@ export default function NewDocumentPage() {
     }
   };
 
-  const handleBarcodeSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleBarcodeSubmit = async (e?: React.FormEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     if (!barcode.trim()) return;
 
     const { getProductByBarcode } = await import('@/lib/storage');
@@ -279,7 +282,7 @@ export default function NewDocumentPage() {
             </h2>
 
             {/* Formularz skanowania */}
-            <form onSubmit={handleBarcodeSubmit} className="mb-6">
+            <div className="mb-6">
               <label className="block text-white mb-2 font-medium">
                 Zeskanuj lub wpisz kod kreskowy
               </label>
@@ -288,9 +291,14 @@ export default function NewDocumentPage() {
                   type="text"
                   value={barcode}
                   onChange={(e) => setBarcode(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleBarcodeSubmit();
+                    }
+                  }}
                   className="flex-1 px-4 py-3 rounded-lg bg-white/20 border border-white/30 text-white placeholder-cyan-200 focus:outline-none focus:ring-2 focus:ring-cyan-400"
                   placeholder="Kod kreskowy (EAN-13)"
-                  pattern="[0-9]{13}"
                   maxLength={13}
                 />
                 <button
@@ -301,13 +309,14 @@ export default function NewDocumentPage() {
                   📷 Kamera
                 </button>
                 <button
-                  type="submit"
+                  type="button"
+                  onClick={() => handleBarcodeSubmit()}
                   className="px-6 py-3 bg-cyan-600 hover:bg-cyan-700 text-white font-medium rounded-lg transition-colors"
                 >
                   Dodaj
                 </button>
               </div>
-            </form>
+            </div>
 
             {/* Lista produktów */}
             {items.length > 0 ? (
