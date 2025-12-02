@@ -24,6 +24,9 @@ export default function NewDocumentPage() {
   const [showAddProduct, setShowAddProduct] = useState(false);
   const [newProductName, setNewProductName] = useState("");
   const [newProductBarcode, setNewProductBarcode] = useState("");
+  const [showQuantityModal, setShowQuantityModal] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<{id: string, name: string, barcode: string} | null>(null);
+  const [quantity, setQuantity] = useState(1);
   const scannerRef = useRef<any>(null);
 
   // Cleanup scanner on unmount
@@ -68,17 +71,13 @@ export default function NewDocumentPage() {
         { facingMode: "environment" },
         config,
         (decodedText) => {
-          // Sukces skanowania - dodaj kod do pola input
+          // Sukces skanowania - dodaj kod do pola input i automatycznie przetwórz
           setBarcode(decodedText);
           setShowScanner(false);
 
-          // Automatycznie dodaj produkt po zamknięciu skanera
+          // Automatycznie przetwórz zeskanowany kod
           setTimeout(() => {
-            const form = document.querySelector('form') as HTMLFormElement;
-            if (form) {
-              const event = new Event('submit', { bubbles: true, cancelable: true });
-              form.dispatchEvent(event);
-            }
+            handleBarcodeSubmit();
           }, 100);
         },
         () => {
@@ -102,36 +101,54 @@ export default function NewDocumentPage() {
     const product = getProductByBarcode(barcode);
 
     if (product) {
-      // Sprawdź czy produkt już jest na liście
-      const existingItem = items.find((item) => item.productId === product.id);
-
-      if (existingItem) {
-        // Zwiększ ilość
-        setItems(
-          items.map((item) =>
-            item.productId === product.id
-              ? { ...item, quantity: item.quantity + 1 }
-              : item
-          )
-        );
-      } else {
-        // Dodaj nowy produkt
-        setItems([
-          ...items,
-          {
-            productId: product.id,
-            productName: product.name,
-            barcode: product.barcode,
-            quantity: 1,
-          },
-        ]);
-      }
-      setBarcode("");
+      // Pokaż modal z pytaniem o ilość
+      setSelectedProduct({
+        id: product.id,
+        name: product.name,
+        barcode: product.barcode
+      });
+      setQuantity(1);
+      setShowQuantityModal(true);
+      setBarcode(""); // Wyczyść pole kodu
     } else {
       // Produkt nie znaleziony - zaproponuj dodanie
       setNewProductBarcode(barcode);
       setShowAddProduct(true);
     }
+  };
+
+  const handleConfirmQuantity = () => {
+    if (!selectedProduct) return;
+
+    // Sprawdź czy produkt już jest na liście
+    const existingItem = items.find((item) => item.productId === selectedProduct.id);
+
+    if (existingItem) {
+      // Zwiększ ilość istniejącego produktu
+      setItems(
+        items.map((item) =>
+          item.productId === selectedProduct.id
+            ? { ...item, quantity: item.quantity + quantity }
+            : item
+        )
+      );
+    } else {
+      // Dodaj nowy produkt
+      setItems([
+        ...items,
+        {
+          productId: selectedProduct.id,
+          productName: selectedProduct.name,
+          barcode: selectedProduct.barcode,
+          quantity: quantity,
+        },
+      ]);
+    }
+
+    // Reset
+    setShowQuantityModal(false);
+    setSelectedProduct(null);
+    setQuantity(1);
   };
 
   const handleAddNewProduct = async (e: React.FormEvent) => {
@@ -142,22 +159,20 @@ export default function NewDocumentPage() {
       const { addProduct } = await import('@/lib/storage');
       const newProduct = addProduct(newProductBarcode, newProductName, true);
 
-      // Dodaj produkt do dokumentu
-      setItems([
-        ...items,
-        {
-          productId: newProduct.id,
-          productName: newProduct.name,
-          barcode: newProduct.barcode,
-          quantity: 1,
-        },
-      ]);
-
-      // Reset
+      // Zamknij modal dodawania produktu
       setShowAddProduct(false);
       setNewProductName("");
       setNewProductBarcode("");
       setBarcode("");
+
+      // Pokaż modal z pytaniem o ilość dla nowo dodanego produktu
+      setSelectedProduct({
+        id: newProduct.id,
+        name: newProduct.name,
+        barcode: newProduct.barcode
+      });
+      setQuantity(1);
+      setShowQuantityModal(true);
     } catch (error: any) {
       alert(error.message || "Błąd podczas dodawania produktu");
     }
@@ -435,6 +450,77 @@ export default function NewDocumentPage() {
               >
                 Zamknij
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal pytania o ilość */}
+      {showQuantityModal && selectedProduct && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full overflow-hidden">
+            <div className="bg-cyan-700 px-6 py-4">
+              <h3 className="text-white text-xl font-bold">
+                Podaj ilość
+              </h3>
+            </div>
+
+            <div className="p-6">
+              <div className="mb-4">
+                <p className="text-gray-700 font-medium mb-2">{selectedProduct.name}</p>
+                <p className="text-gray-500 text-sm font-mono">{selectedProduct.barcode}</p>
+              </div>
+
+              <div>
+                <label className="block text-gray-700 mb-2 font-medium">
+                  Ilość sztuk
+                </label>
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                    className="w-12 h-12 bg-gray-200 hover:bg-gray-300 rounded-lg text-gray-700 font-bold text-xl"
+                  >
+                    -
+                  </button>
+                  <input
+                    type="number"
+                    value={quantity}
+                    onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+                    className="flex-1 px-4 py-3 text-center text-2xl font-bold rounded-lg border-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-cyan-400"
+                    min="1"
+                    autoFocus
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setQuantity(quantity + 1)}
+                    className="w-12 h-12 bg-gray-200 hover:bg-gray-300 rounded-lg text-gray-700 font-bold text-xl"
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex gap-3 mt-6">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowQuantityModal(false);
+                    setSelectedProduct(null);
+                    setQuantity(1);
+                  }}
+                  className="flex-1 px-4 py-3 bg-gray-300 hover:bg-gray-400 text-gray-800 font-medium rounded-lg transition-colors"
+                >
+                  Anuluj
+                </button>
+                <button
+                  type="button"
+                  onClick={handleConfirmQuantity}
+                  className="flex-1 px-4 py-3 bg-cyan-600 hover:bg-cyan-700 text-white font-medium rounded-lg transition-colors"
+                >
+                  Dodaj
+                </button>
+              </div>
             </div>
           </div>
         </div>
