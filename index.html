@@ -1329,22 +1329,22 @@
     .modal {
         display: none;
         position: fixed;
-        inset: 0;
-        background: rgba(0, 0, 0, 0);
-        z-index: 10000;  /* Higher z-index to ensure it's always on top */
-        align-items: center;
-        justify-content: center;
-        padding: var(--space-lg);
-        transition: background 0.3s ease;
-        /* Ensure modal is always centered */
         top: 0;
         left: 0;
         right: 0;
         bottom: 0;
+        background: rgba(0, 0, 0, 0);
+        z-index: 10000;
+        transition: background 0.3s ease;
+        padding: var(--space-lg);
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
     }
 
     .modal.active {
-        display: flex !important;  /* Force flex display */
+        display: flex;
+        align-items: center;
+        justify-content: center;
         background: rgba(0, 0, 0, 0.6);
         backdrop-filter: blur(8px);
         -webkit-backdrop-filter: blur(8px);
@@ -1358,6 +1358,7 @@
         border-radius: 20px;
         padding: var(--space-xl);
         width: min(420px, 100%);
+        max-width: 90vw;
         border: 1px solid rgba(255, 255, 255, 0.6);
         box-shadow:
             0 20px 60px rgba(0, 0, 0, 0.3),
@@ -1367,6 +1368,7 @@
         transform-origin: center;
         position: relative;
         overflow: hidden;
+        margin: auto;
     }
 
     .modal-content::before {
@@ -2807,10 +2809,16 @@
             }
 
             showModal(modalId) {
-                document.getElementById(modalId).classList.add('active');
-                
+                // Prevent body scroll when modal is open
+                document.body.style.overflow = 'hidden';
+
+                const modal = document.getElementById(modalId);
+                modal.classList.add('active');
+
+                // Ensure modal is visible
+                modal.scrollTop = 0;
+
                 setTimeout(() => {
-                    const modal = document.getElementById(modalId);
                     const firstInput = modal.querySelector('input[type="text"], input[type="number"]');
                     if (firstInput) {
                         firstInput.focus();
@@ -2820,6 +2828,9 @@
             }
 
             hideModal(modalId) {
+                // Re-enable body scroll
+                document.body.style.overflow = '';
+
                 document.getElementById(modalId).classList.remove('active');
             }
 
@@ -3192,41 +3203,6 @@ async initializeScanner() {
     this.addScannerOverlay();
     this.scannerActive = true;
 
-    // Get scanning frame dimensions for validation
-    const getScanningArea = () => {
-        const overlay = document.querySelector('.scanner-overlay');
-        if (!overlay) return null;
-        const rect = overlay.getBoundingClientRect();
-        return {
-            x: rect.left,
-            y: rect.top,
-            width: rect.width,
-            height: rect.height,
-            centerX: rect.left + rect.width / 2,
-            centerY: rect.top + rect.height / 2
-        };
-    };
-
-    // Check if barcode is within scanning frame
-    const isBarcodeInFrame = (boundingBox) => {
-        const scanArea = getScanningArea();
-        if (!scanArea) return true; // If no overlay, accept all
-
-        // Calculate barcode center
-        const barcodeX = boundingBox.x + boundingBox.width / 2;
-        const barcodeY = boundingBox.y + boundingBox.height / 2;
-
-        // Check if barcode center is within scanning frame (with some tolerance)
-        const tolerance = 0.2; // 20% tolerance
-        const frameLeft = scanArea.x - scanArea.width * tolerance;
-        const frameRight = scanArea.x + scanArea.width * (1 + tolerance);
-        const frameTop = scanArea.y - scanArea.height * tolerance;
-        const frameBottom = scanArea.y + scanArea.height * (1 + tolerance);
-
-        return barcodeX >= frameLeft && barcodeX <= frameRight &&
-               barcodeY >= frameTop && barcodeY <= frameBottom;
-    };
-
     // 2. Jeśli jest BarcodeDetector – użyj go
     if ('BarcodeDetector' in window) {
         const detector = new BarcodeDetector({ formats: ['ean_13', 'ean_8', 'code_128'] });
@@ -3237,21 +3213,13 @@ async initializeScanner() {
             try {
                 const barcodes = await detector.detect(videoEl);
                 if (barcodes.length > 0) {
-                    const barcode = barcodes[0];
-
-                    // Check if barcode is in the scanning frame
-                    if (isBarcodeInFrame(barcode.boundingBox)) {
-                        const code = barcode.rawValue;
-                        this.showScanSuccess();       // pokaż zielone podświetlenie
-                        setTimeout(() => {
-                            this.stopScanner();       // wyłącz kamerę po animacji
-                            // Small delay to ensure scanner is fully stopped before showing modal
-                            setTimeout(() => {
-                                this.processBarcodeDetection(code);
-                            }, 100);
-                        }, 300);
-                        return;
-                    }
+                    const code = barcodes[0].rawValue;
+                    this.showScanSuccess();       // pokaż zielone podświetlenie
+                    setTimeout(() => {
+                        this.stopScanner();       // wyłącz kamerę po animacji
+                        this.processBarcodeDetection(code);
+                    }, 300);
+                    return;
                 }
             } catch (e) {
                 console.warn('BarcodeDetector error, falling back to Quagga', e);
@@ -3286,8 +3254,7 @@ async initializeScanner() {
                     ]
                 },
                 locate: true,
-                numOfWorkers: navigator.hardwareConcurrency || 2,
-                frequency: 5  // Reduce scanning frequency to avoid too many detections
+                numOfWorkers: navigator.hardwareConcurrency || 2
             }, (err) => {
                 if (err) {
                     reject(err);
@@ -3298,34 +3265,12 @@ async initializeScanner() {
 
                 Quagga.onDetected((data) => {
                     if (!this.scannerActive) return;
-
-                    // Check if detected barcode is in frame
-                    const box = data.box;
-                    if (box && box.length >= 2) {
-                        // Calculate bounding box from Quagga's box points
-                        const xs = box.map(p => p[0]);
-                        const ys = box.map(p => p[1]);
-                        const boundingBox = {
-                            x: Math.min(...xs),
-                            y: Math.min(...ys),
-                            width: Math.max(...xs) - Math.min(...xs),
-                            height: Math.max(...ys) - Math.min(...ys)
-                        };
-
-                        if (!isBarcodeInFrame(boundingBox)) {
-                            return; // Ignore barcode outside frame
-                        }
-                    }
-
                     const code = data.codeResult.code;
                     if (this.isValidEAN13(code)) {
                         this.showScanSuccess();       // pokaż zielone podświetlenie
                         setTimeout(() => {
                             this.stopScanner();
-                            // Small delay to ensure scanner is fully stopped before showing modal
-                            setTimeout(() => {
-                                this.processBarcodeDetection(code);
-                            }, 100);
+                            this.processBarcodeDetection(code);
                         }, 300);
                     }
                 });
