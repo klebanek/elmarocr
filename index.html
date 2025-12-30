@@ -3407,116 +3407,113 @@
             }
 
             async startScanner() {
-    this.showScreen('scannerScreen');
-    try {
-        await this.initializeScanner();
-    } catch (err) {
-        console.error(err);
-        this.showCameraError();
-    }
-}
-
-async initializeScanner() {
-    const videoEl = document.createElement('video');
-    const scannerContainer = document.querySelector('#scanner');
-    scannerContainer.innerHTML = '';
-    scannerContainer.appendChild(videoEl);
-
-    // 1. Pobranie streamu z kamery - standardowe ustawienia bez zoom
-    const stream = await navigator.mediaDevices.getUserMedia({
-        audio: false,
-        video: {
-            facingMode: { ideal: "environment" },
-            width: { ideal: 1280 },
-            height: { ideal: 720 },
-            aspectRatio: { ideal: 16/9 }
-        }
-    });
-
-    videoEl.srcObject = stream;
-    await videoEl.play();
-
-    // Dodaj ramkę celującą jak wcześniej
-    this.addScannerOverlay();
-    this.scannerActive = true;
-
-    // 2. Jeśli jest BarcodeDetector – użyj go
-    if ('BarcodeDetector' in window) {
-        const detector = new BarcodeDetector({ formats: ['ean_13', 'ean_8', 'code_128'] });
-
-        const scanFrame = async () => {
-            if (!this.scannerActive) return;
-
-            try {
-                const barcodes = await detector.detect(videoEl);
-                if (barcodes.length > 0) {
-                    const code = barcodes[0].rawValue;
-                    this.showScanSuccess();       // pokaż zielone podświetlenie
-                    setTimeout(() => {
-                        this.stopScanner();       // wyłącz kamerę po animacji
-                        this.processBarcodeDetection(code);
-                    }, 300);
-                    return;
+                this.showScreen('scannerScreen');
+                try {
+                    await this.initializeScanner();
+                } catch (err) {
+                    console.error(err);
+                    this.showCameraError();
                 }
-            } catch (e) {
-                console.warn('BarcodeDetector error, falling back to Quagga', e);
-                // jeśli się wywali – lecimy dalej do Quaggi niżej
             }
 
-            requestAnimationFrame(scanFrame);
-        };
+            async initializeScanner() {
+                const videoEl = document.createElement('video');
+                const scannerContainer = document.querySelector('#scanner');
+                scannerContainer.innerHTML = '';
+                scannerContainer.appendChild(videoEl);
 
-        requestAnimationFrame(scanFrame);
-    } else {
-        // 3. Fallback do Quagga, ale odchudzony
-        return new Promise((resolve, reject) => {
-            Quagga.init({
-                inputStream: {
-                    name: "Live",
-                    type: "LiveStream",
-                    target: scannerContainer,
-                    constraints: {
-                        facingMode: "environment",
-                        width: { ideal: 1920 },
-                        height: { ideal: 1080 }
-                    }
-                },
-                locator: {
-                    patchSize: "medium",
-                    halfSample: true
-                },
-                decoder: {
-                    readers: [
-                        "ean_reader"           // tyle nam trzeba
-                    ]
-                },
-                locate: true,
-                numOfWorkers: navigator.hardwareConcurrency || 2
-            }, (err) => {
-                if (err) {
-                    reject(err);
-                    return;
-                }
-                Quagga.start();
-                this.scannerActive = true;
-
-                Quagga.onDetected((data) => {
-                    if (!this.scannerActive) return;
-                    const code = data.codeResult.code;
-                    if (this.isValidEAN13(code)) {
-                        this.showScanSuccess();       // pokaż zielone podświetlenie
-                        setTimeout(() => {
-                            this.stopScanner();
-                            this.processBarcodeDetection(code);
-                        }, 300);
+                // 1. Pobranie streamu z kamery - standardowe ustawienia bez zoom
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    audio: false,
+                    video: {
+                        facingMode: { ideal: "environment" },
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 },
+                        aspectRatio: { ideal: 16/9 }
                     }
                 });
 
-                resolve();
-            });
-        });
-    }
-}
+                videoEl.srcObject = stream;
+                await videoEl.play();
+
+                // Dodaj ramkę celującą jak wcześniej
+                this.addScannerOverlay();
+                this.scannerActive = true;
+
+                // 2. Jeśli jest BarcodeDetector – użyj go
+                if ('BarcodeDetector' in window) {
+                    const detector = new BarcodeDetector({ formats: ['ean_13', 'ean_8', 'code_128'] });
+
+                    const scanFrame = async () => {
+                        if (!this.scannerActive) return;
+
+                        try {
+                            const barcodes = await detector.detect(videoEl);
+                            if (barcodes.length > 0) {
+                                const code = barcodes[0].rawValue;
+                                this.showScanSuccess();
+                                setTimeout(() => {
+                                    this.stopScanner();
+                                    this.processBarcodeDetection(code);
+                                }, 300);
+                                return;
+                            }
+                        } catch (e) {
+                            console.warn('BarcodeDetector error, falling back to Quagga', e);
+                        }
+
+                        requestAnimationFrame(scanFrame);
+                    };
+
+                    requestAnimationFrame(scanFrame);
+                } else {
+                    // 3. Fallback do Quagga
+                    return new Promise((resolve, reject) => {
+                        Quagga.init({
+                            inputStream: {
+                                name: "Live",
+                                type: "LiveStream",
+                                target: scannerContainer,
+                                constraints: {
+                                    facingMode: "environment",
+                                    width: { ideal: 1920 },
+                                    height: { ideal: 1080 }
+                                }
+                            },
+                            locator: {
+                                patchSize: "medium",
+                                halfSample: true
+                            },
+                            decoder: {
+                                readers: ["ean_reader"]
+                            },
+                            locate: true,
+                            numOfWorkers: navigator.hardwareConcurrency || 2
+                        }, (err) => {
+                            if (err) {
+                                reject(err);
+                                return;
+                            }
+                            Quagga.start();
+                            this.scannerActive = true;
+
+                            Quagga.onDetected((data) => {
+                                if (!this.scannerActive) return;
+                                const code = data.codeResult.code;
+                                if (this.isValidEAN13(code)) {
+                                    this.showScanSuccess();
+                                    setTimeout(() => {
+                                        this.stopScanner();
+                                        this.processBarcodeDetection(code);
+                                    }, 300);
+                                }
+                            });
+
+                            resolve();
+                        });
+                    });
+                }
+            }
 
 
             addScannerOverlay() {
@@ -3620,20 +3617,20 @@ async initializeScanner() {
             }
 
             stopScanner() {
-    this.scannerActive = false;
+                this.scannerActive = false;
 
-    // zatrzymaj Quaggę jeśli działa
-    if (typeof Quagga !== 'undefined' && Quagga.stop) {
-        try { Quagga.stop(); } catch (e) {}
-    }
+                // zatrzymaj Quaggę jeśli działa
+                if (typeof Quagga !== 'undefined' && Quagga.stop) {
+                    try { Quagga.stop(); } catch (e) {}
+                }
 
-    // zatrzymaj strumień z video
-    const scanner = document.querySelector('#scanner video');
-    if (scanner && scanner.srcObject) {
-        scanner.srcObject.getTracks().forEach(track => track.stop());
-        scanner.srcObject = null;
-    }
-}
+                // zatrzymaj strumień z video
+                const scanner = document.querySelector('#scanner video');
+                if (scanner && scanner.srcObject) {
+                    scanner.srcObject.getTracks().forEach(track => track.stop());
+                    scanner.srcObject = null;
+                }
+            }
 
             showCameraError() {
                 const scanner = document.getElementById('scanner');
@@ -5106,13 +5103,13 @@ async initializeScanner() {
                             Wybierz opcję usuwania:
                         </p>
                         <div style="display: flex; flex-direction: column; gap: var(--space-md);">
-                            <button class="btn btn--primary" onclick="app.deleteAllDocuments(); this.closest('.modal-backdrop').remove();" style="width: 100%;">
+                            <button class="btn btn--primary" onclick="app.closeDynamicModal(); app.deleteAllDocuments();" style="width: 100%;">
                                 Usuń wszystkie dokumenty (${this.documents.length})
                             </button>
-                            <button class="btn btn--secondary" onclick="app.showDeleteSelectionModal(); this.closest('.modal-backdrop').remove();" style="width: 100%;">
+                            <button class="btn btn--secondary" onclick="app.closeDynamicModal(); app.showDeleteSelectionModal();" style="width: 100%;">
                                 Wybierz dokumenty do usunięcia
                             </button>
-                            <button class="btn btn--outline" onclick="this.closest('.modal-backdrop').remove();" style="width: 100%;">
+                            <button class="btn btn--outline" onclick="app.closeDynamicModal();" style="width: 100%;">
                                 Anuluj
                             </button>
                         </div>
@@ -5199,7 +5196,7 @@ Czy jesteś absolutnie pewien?`;
                             <button class="btn btn--primary" onclick="app.deleteSelectedDocuments()" style="flex: 1; min-width: 200px;">
                                 Usuń zaznaczone
                             </button>
-                            <button class="btn btn--outline" onclick="this.closest('.modal-backdrop').remove()" style="flex: 1; min-width: 150px;">
+                            <button class="btn btn--outline" onclick="app.closeDynamicModal()" style="flex: 1; min-width: 150px;">
                                 Anuluj
                             </button>
                         </div>
@@ -5238,9 +5235,8 @@ Czy jesteś pewien?`;
                     this.documents = this.documents.filter(doc => !selectedIds.includes(doc.id));
                     localStorage.setItem('elmarDocuments', JSON.stringify(this.documents));
 
-                    // Close modal
-                    const modal = document.querySelector('.modal-backdrop');
-                    if (modal) modal.remove();
+                    // Close modal and restore body styles
+                    this.closeDynamicModal();
 
                     this.updateDocumentsList();
                     this.showNotification(`Usunięto ${selectedIds.length} dokumentów`, 'success');
@@ -5289,6 +5285,20 @@ Czy jesteś pewien?`;
                 });
 
                 document.body.appendChild(modal);
+            }
+
+            closeDynamicModal() {
+                // Restore body to normal state
+                document.body.style.position = '';
+                document.body.style.top = '';
+                document.body.style.width = '';
+                document.body.style.overflow = '';
+
+                // Remove the modal
+                const modal = document.querySelector('.modal-backdrop');
+                if (modal) {
+                    modal.remove();
+                }
             }
 
             // Export/Import Functions
