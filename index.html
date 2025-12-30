@@ -3024,11 +3024,23 @@
             }
 
             showModal(modalId) {
+                // FIRST: Scroll to top BEFORE doing anything else
+                window.scrollTo(0, 0);
+                document.documentElement.scrollTop = 0;
+                document.body.scrollTop = 0;
+
                 // Close any previously open modals first
                 const allModals = document.querySelectorAll('.modal.active');
                 allModals.forEach(m => {
                     m.classList.remove('active');
                 });
+
+                // Save current scroll position and freeze page at top
+                const scrollY = window.scrollY || window.pageYOffset || document.documentElement.scrollTop;
+                document.body.style.position = 'fixed';
+                document.body.style.top = '0px';
+                document.body.style.width = '100%';
+                document.body.style.overflow = 'hidden';
 
                 const modal = document.getElementById(modalId);
                 modal.classList.add('active');
@@ -3040,23 +3052,6 @@
                     modalContent.scrollTop = 0;
                 }
 
-                // FORCE scroll to top with multiple methods and slight delay
-                requestAnimationFrame(() => {
-                    window.scrollTo(0, 0);
-                    document.documentElement.scrollTop = 0;
-                    document.body.scrollTop = 0;
-
-                    // Double-check after a moment
-                    setTimeout(() => {
-                        window.scrollTo(0, 0);
-                        document.documentElement.scrollTop = 0;
-                        document.body.scrollTop = 0;
-                    }, 10);
-                });
-
-                // Prevent body scroll when modal is open
-                document.body.style.overflow = 'hidden';
-
                 setTimeout(() => {
                     const firstInput = modal.querySelector('input[type="text"], input[type="number"]');
                     if (firstInput) {
@@ -3067,7 +3062,10 @@
             }
 
             hideModal(modalId) {
-                // Re-enable body scroll
+                // Restore body to normal state
+                document.body.style.position = '';
+                document.body.style.top = '';
+                document.body.style.width = '';
                 document.body.style.overflow = '';
 
                 document.getElementById(modalId).classList.remove('active');
@@ -5250,6 +5248,17 @@ Czy jesteś pewien?`;
             }
 
             showDynamicModal(htmlContent) {
+                // FIRST: Scroll to top BEFORE doing anything else
+                window.scrollTo(0, 0);
+                document.documentElement.scrollTop = 0;
+                document.body.scrollTop = 0;
+
+                // Freeze page at top
+                document.body.style.position = 'fixed';
+                document.body.style.top = '0px';
+                document.body.style.width = '100%';
+                document.body.style.overflow = 'hidden';
+
                 const modal = document.createElement('div');
                 modal.className = 'modal-backdrop';
                 modal.style.cssText = `
@@ -5271,28 +5280,15 @@ Czy jesteś pewien?`;
                 modal.addEventListener('click', (e) => {
                     if (e.target === modal) {
                         modal.remove();
+                        // Restore body to normal state
+                        document.body.style.position = '';
+                        document.body.style.top = '';
+                        document.body.style.width = '';
                         document.body.style.overflow = '';
                     }
                 });
 
                 document.body.appendChild(modal);
-
-                // FORCE scroll to top with requestAnimationFrame for proper timing
-                requestAnimationFrame(() => {
-                    window.scrollTo(0, 0);
-                    document.documentElement.scrollTop = 0;
-                    document.body.scrollTop = 0;
-
-                    // Double-check after a moment
-                    setTimeout(() => {
-                        window.scrollTo(0, 0);
-                        document.documentElement.scrollTop = 0;
-                        document.body.scrollTop = 0;
-                    }, 10);
-                });
-
-                // Prevent body scroll when modal is open
-                document.body.style.overflow = 'hidden';
             }
 
             // Export/Import Functions
