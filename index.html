@@ -3001,16 +3001,22 @@
             }
 
             showScreen(screenId) {
+                // Scroll to top immediately for smooth transition
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+
                 document.querySelectorAll('.screen').forEach(screen => {
                     screen.classList.remove('active');
                 });
 
-                document.getElementById(screenId).classList.add('active');
+                const newScreen = document.getElementById(screenId);
+                newScreen.classList.add('active');
                 this.currentScreen = screenId;
-                
+
+                // Scroll the screen content to top as well
+                newScreen.scrollTop = 0;
+
                 setTimeout(() => {
-                    const activeScreen = document.getElementById(screenId);
-                    const firstInput = activeScreen.querySelector('input[type="text"], input[type="number"], textarea');
+                    const firstInput = newScreen.querySelector('input[type="text"], input[type="number"], textarea');
                     if (firstInput && !this.isMobile()) {
                         firstInput.focus();
                     }
@@ -3794,9 +3800,14 @@ async initializeScanner() {
 
                 this.addProductToDocument(this.currentBarcode, productName, quantity);
                 this.hideModal('quantityModal');
-                
+
                 this.clearManualEntryForm();
-                this.showScreen('mainDocumentScreen');
+
+                // Automatically start scanner for next product
+                this.showNotification('Produkt dodany! Skanuj następny...', 'success');
+                setTimeout(() => {
+                    this.startScanner();
+                }, 300);
             }
 
             addNewProduct() {
@@ -3818,12 +3829,16 @@ async initializeScanner() {
 
                 this.addProductToDocument(this.currentBarcode, productName, quantity);
                 this.hideModal('newProductModal');
-                
+
                 document.getElementById('newProductName').value = '';
                 document.getElementById('newProductQuantity').value = '1';
                 this.clearManualEntryForm();
-                
-                this.showScreen('mainDocumentScreen');
+
+                // Automatically start scanner for next product
+                this.showNotification('Nowy produkt dodany! Skanuj następny...', 'success');
+                setTimeout(() => {
+                    this.startScanner();
+                }, 300);
             }
 
             addProductToDocument(barcode, productName, quantity) {
