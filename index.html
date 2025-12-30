@@ -2079,6 +2079,14 @@
                 </svg>
                 Zarządzaj bazą produktów
             </button>
+            <button class="btn btn--outline" id="helpBtn" style="margin-top: var(--space-lg);">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+                    <circle cx="12" cy="17" r="0.5" fill="currentColor"/>
+                </svg>
+                Pomoc - Jak korzystać z aplikacji
+            </button>
         </div>
         <footer class="footer">
             <div class="footer-content">
@@ -2406,6 +2414,127 @@
         </div>
     </div>
 
+    <!-- Help Modal -->
+    <div id="helpModal" class="modal">
+        <div class="modal-content" style="max-width: 600px; max-height: 80vh; overflow-y: auto;">
+            <h3 style="color: var(--elmar-primary); margin-bottom: var(--space-lg);">Jak korzystać z aplikacji ELMAR PWA</h3>
+
+            <div style="margin-bottom: var(--space-xl);">
+                <h4 style="color: var(--elmar-primary); margin-bottom: var(--space-sm); border-bottom: 2px solid var(--elmar-primary); padding-bottom: 8px;">
+                    1. Rozpoczęcie pracy
+                </h4>
+                <p style="line-height: 1.8;">
+                    Kliknij <strong>"Dodaj nowy dokument"</strong>, wypełnij formularz z danymi magazyniera i datą,
+                    następnie kliknij <strong>"Rozpocznij"</strong>.
+                </p>
+            </div>
+
+            <div style="margin-bottom: var(--space-xl);">
+                <h4 style="color: var(--elmar-primary); margin-bottom: var(--space-sm); border-bottom: 2px solid var(--elmar-primary); padding-bottom: 8px;">
+                    2. Dodawanie produktów - Skanowanie
+                </h4>
+                <p style="line-height: 1.8;">
+                    <strong>Krok 1:</strong> Kliknij przycisk <strong>"Skanuj kod"</strong><br>
+                    <strong>Krok 2:</strong> Przyłóż kod kreskowy do ramki na ekranie<br>
+                    <strong>Krok 3:</strong> Kod zostanie automatycznie odczytany<br>
+                    <strong>Krok 4:</strong> Potwierdź ilość sztuk i kliknij <strong>"Dodaj"</strong>
+                </p>
+                <p style="background: #f0f9ff; padding: var(--space-md); border-radius: 8px; margin-top: var(--space-sm);">
+                    <strong>Wskazówka:</strong> Upewnij się, że kod jest dobrze oświetlony i mieści się w ramce skanowania.
+                </p>
+            </div>
+
+            <div style="margin-bottom: var(--space-xl);">
+                <h4 style="color: var(--elmar-primary); margin-bottom: var(--space-sm); border-bottom: 2px solid var(--elmar-primary); padding-bottom: 8px;">
+                    3. Dodawanie produktów - Ręczne wprowadzanie
+                </h4>
+                <p style="line-height: 1.8;">
+                    <strong>Krok 1:</strong> Kliknij przycisk <strong>"Wprowadź ręcznie"</strong><br>
+                    <strong>Krok 2:</strong> Możesz:
+                </p>
+                <ul style="margin-left: var(--space-lg); line-height: 1.8;">
+                    <li><strong>Wpisać kod kreskowy</strong> (13 cyfr) - jeśli produkt istnieje w bazie, nazwa pojawi się automatycznie</li>
+                    <li><strong>Wyszukać po nazwie</strong> - zacznij wpisywać nazwę produktu w polu wyszukiwania, wybierz z listy</li>
+                </ul>
+                <p style="line-height: 1.8;">
+                    <strong>Krok 3:</strong> Wprowadź ilość sztuk<br>
+                    <strong>Krok 4:</strong> Kliknij <strong>"Dodaj produkt"</strong>
+                </p>
+            </div>
+
+            <div style="margin-bottom: var(--space-xl);">
+                <h4 style="color: var(--elmar-primary); margin-bottom: var(--space-sm); border-bottom: 2px solid var(--elmar-primary); padding-bottom: 8px;">
+                    4. Dodawanie nowego produktu do bazy
+                </h4>
+                <p style="line-height: 1.8;">
+                    Jeśli zeskanujesz lub wpiszesz kod, którego nie ma w bazie:
+                </p>
+                <ul style="margin-left: var(--space-lg); line-height: 1.8;">
+                    <li>Aplikacja pokaże okno <strong>"Nieznany kod produktu"</strong></li>
+                    <li>Wpisz nazwę nowego produktu</li>
+                    <li>Wprowadź ilość</li>
+                    <li>Kliknij <strong>"Dodaj"</strong></li>
+                    <li>Produkt zostanie zapisany w bazie dla przyszłych użyć</li>
+                </ul>
+            </div>
+
+            <div style="margin-bottom: var(--space-xl);">
+                <h4 style="color: var(--elmar-primary); margin-bottom: var(--space-sm); border-bottom: 2px solid var(--elmar-primary); padding-bottom: 8px;">
+                    5. Edycja i usuwanie produktów
+                </h4>
+                <p style="line-height: 1.8;">
+                    W tabeli z produktami możesz:
+                </p>
+                <ul style="margin-left: var(--space-lg); line-height: 1.8;">
+                    <li>Kliknąć <strong>"Edytuj"</strong> - aby zmienić ilość lub dodać uwagi</li>
+                    <li>Kliknąć <strong>"Usuń"</strong> - aby usunąć produkt z dokumentu</li>
+                </ul>
+            </div>
+
+            <div style="margin-bottom: var(--space-xl);">
+                <h4 style="color: var(--elmar-primary); margin-bottom: var(--space-sm); border-bottom: 2px solid var(--elmar-primary); padding-bottom: 8px;">
+                    6. Zakończenie i zapisanie dokumentu
+                </h4>
+                <p style="line-height: 1.8;">
+                    Po dodaniu wszystkich produktów:<br>
+                    <strong>Krok 1:</strong> Kliknij <strong>"Zakończ i zapisz"</strong><br>
+                    <strong>Krok 2:</strong> Dokument zostanie zapisany w liście dokumentów<br>
+                    <strong>Krok 3:</strong> Możesz wyeksportować dokument do PDF lub Excel
+                </p>
+            </div>
+
+            <div style="margin-bottom: var(--space-xl);">
+                <h4 style="color: var(--elmar-primary); margin-bottom: var(--space-sm); border-bottom: 2px solid var(--elmar-primary); padding-bottom: 8px;">
+                    7. Zarządzanie bazą produktów
+                </h4>
+                <p style="line-height: 1.8;">
+                    W menu głównym wybierz <strong>"Zarządzaj bazą produktów"</strong>:
+                </p>
+                <ul style="margin-left: var(--space-lg); line-height: 1.8;">
+                    <li>Przeglądaj wszystkie produkty</li>
+                    <li>Wyszukuj produkty po nazwie lub kodzie</li>
+                    <li>Edytuj nazwy produktów</li>
+                    <li>Usuwaj niepotrzebne produkty</li>
+                    <li>Importuj/eksportuj bazę produktów</li>
+                </ul>
+            </div>
+
+            <div style="background: #dcfce7; padding: var(--space-lg); border-radius: 8px; border-left: 4px solid #16a34a;">
+                <h4 style="color: #16a34a; margin-bottom: var(--space-sm);">Przydatne wskazówki</h4>
+                <ul style="margin-left: var(--space-lg); line-height: 1.8;">
+                    <li>Wszystkie dane są zapisywane lokalnie w przeglądarce</li>
+                    <li>Aplikacja działa offline po pierwszym załadowaniu</li>
+                    <li>Regularnie eksportuj dane jako backup</li>
+                    <li>Możesz pracować na wielu dokumentach jednocześnie</li>
+                </ul>
+            </div>
+
+            <div class="form-actions" style="margin-top: var(--space-xl);">
+                <button type="button" class="btn btn--primary" id="closeHelpBtn">Rozumiem</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Documents List Screen -->
     <div id="documentsListScreen" class="screen">
         <div class="header">
@@ -2727,6 +2856,14 @@
                 document.getElementById('manageDatabaseBtn').addEventListener('click', () => {
                     this.showScreen('databaseScreen');
                     this.updateDatabaseStats();
+                });
+
+                document.getElementById('helpBtn').addEventListener('click', () => {
+                    this.showModal('helpModal');
+                });
+
+                document.getElementById('closeHelpBtn').addEventListener('click', () => {
+                    this.hideModal('helpModal');
                 });
 
                 document.getElementById('documentForm').addEventListener('submit', (e) => {
