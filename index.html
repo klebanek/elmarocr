@@ -3024,6 +3024,9 @@
             }
 
             showModal(modalId) {
+                // First: scroll window to top IMMEDIATELY so user can see modal
+                window.scrollTo(0, 0);
+
                 // Close any previously open modals first
                 const allModals = document.querySelectorAll('.modal.active');
                 allModals.forEach(m => {
@@ -3042,9 +3045,6 @@
                 if (modalContent) {
                     modalContent.scrollTop = 0;
                 }
-
-                // Scroll window to top as well
-                window.scrollTo(0, 0);
 
                 setTimeout(() => {
                     const firstInput = modal.querySelector('input[type="text"], input[type="number"]');
