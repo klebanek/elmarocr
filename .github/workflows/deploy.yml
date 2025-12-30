@@ -2,7 +2,7 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: ["claude/create-new-app-01GqHCy75fBbhSWjK6nMxXK8"]
+    branches: ["claude/deploy-github-server-01BofemhdWkbuWC1jztCZx7q"]
   workflow_dispatch:
 
 permissions:
