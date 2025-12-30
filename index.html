@@ -3024,8 +3024,10 @@
             }
 
             showModal(modalId) {
-                // First: scroll window to top IMMEDIATELY so user can see modal
+                // FIRST: Scroll window to top IMMEDIATELY (triple method for reliability)
                 window.scrollTo(0, 0);
+                document.documentElement.scrollTop = 0;
+                document.body.scrollTop = 0;
 
                 // Close any previously open modals first
                 const allModals = document.querySelectorAll('.modal.active');
@@ -5239,6 +5241,11 @@ Czy jesteś pewien?`;
             }
 
             showDynamicModal(htmlContent) {
+                // FIRST: Scroll window to top IMMEDIATELY
+                window.scrollTo(0, 0);
+                document.documentElement.scrollTop = 0;
+                document.body.scrollTop = 0;
+
                 const modal = document.createElement('div');
                 modal.className = 'modal-backdrop';
                 modal.style.cssText = `
@@ -5264,6 +5271,9 @@ Czy jesteś pewien?`;
                 });
 
                 document.body.appendChild(modal);
+
+                // Prevent body scroll when modal is open
+                document.body.style.overflow = 'hidden';
             }
 
             // Export/Import Functions
