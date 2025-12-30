@@ -2161,10 +2161,10 @@
                 
                 <div style="text-align: center; margin-bottom: var(--space-lg);">
                     <button class="btn btn--primary" id="addProductBtn">
-                        📷 Skanuj kod
+                        Skanuj kod
                     </button>
                     <button class="btn btn--outline" id="manualEntryBtn" style="margin-left: var(--space-md);">
-                        ✏️ Wprowadź ręcznie
+                        Wprowadź ręcznie
                     </button>
                 </div>
             </div>
@@ -2194,7 +2194,7 @@
         <div class="scanner-container">
             <div class="scanner-header">
                 <h3>Skanowanie kodu kreskowego</h3>
-                <button class="btn btn--secondary btn--sm" id="cancelScanBtn">✕ Anuluj</button>
+                <button class="btn btn--secondary btn--sm" id="cancelScanBtn">Anuluj</button>
             </div>
             <div id="scanner" class="scanner-viewport"></div>
             <div class="scanner-actions">
@@ -2428,7 +2428,7 @@
     <div id="endWorkScreen" class="screen">
         <div class="header">
             <img src="logo.png" alt="ELMAR Logo" class="header-logo">
-            <h2>✓ Praca zakończona</h2>
+            <h2>Praca zakończona</h2>
         </div>
         <div class="success-message">
             <p>Wszystkie dane zostały wyczyszczone</p>
@@ -2880,7 +2880,7 @@
                     stream.getTracks().forEach(track => track.stop());
 
                     this.cameraPermissionGranted = true;
-                    console.log('✓ Dostęp do kamery przyznany');
+                    console.log('Dostęp do kamery przyznany');
                     return true;
                 } catch (err) {
                     console.warn('Nie udało się uzyskać dostępu do kamery:', err);
@@ -3290,7 +3290,7 @@ async initializeScanner() {
 
                 // Dodaj wszystkie cztery narożniki
                 overlay.innerHTML = `
-                    <div class="scanner-overlay-label" id="scannerOverlayLabel">📱 Umieść kod w ramce</div>
+                    <div class="scanner-overlay-label" id="scannerOverlayLabel">Umieść kod w ramce</div>
                 `;
 
                 // Utwórz pozostałe narożniki poza pseudo-elementami
@@ -3314,7 +3314,7 @@ async initializeScanner() {
                 }
 
                 if (label) {
-                    label.textContent = '✓ Kod zeskanowany!';
+                    label.textContent = 'Kod zeskanowany!';
                     label.classList.add('success');
                 }
 
@@ -3428,10 +3428,10 @@ async initializeScanner() {
                     input.style.borderColor = 'var(--elmar-warning)';
                 } else if (value.length === 13) {
                     if (this.productDatabase[value]) {
-                        this.showBarcodeStatus(`✓ Produkt znaleziony: ${this.productDatabase[value]}`, 'success');
+                        this.showBarcodeStatus(`Produkt znaleziony: ${this.productDatabase[value]}`, 'success');
                         input.style.borderColor = 'var(--elmar-success)';
                     } else {
-                        this.showBarcodeStatus('⚠ Kod nie istnieje w bazie - zostanie dodany jako nowy produkt', 'warning');
+                        this.showBarcodeStatus('Kod nie istnieje w bazie - zostanie dodany jako nowy produkt', 'warning');
                         input.style.borderColor = 'var(--elmar-warning)';
                     }
                 }
@@ -3779,14 +3779,14 @@ async initializeScanner() {
                 if (toggleBtn) {
                     const hiddenCount = this.documents.length - docsToShow.length;
                     if (this.showAllDocuments) {
-                        toggleBtn.textContent = '📅 Pokaż tylko dzisiejsze';
+                        toggleBtn.textContent = 'Pokaż tylko dzisiejsze';
                         toggleBtn.className = 'btn btn--outline';
                     } else {
                         if (hiddenCount > 0) {
-                            toggleBtn.textContent = `📂 Pokaż wszystkie dokumenty (${this.documents.length})`;
+                            toggleBtn.textContent = `Pokaż wszystkie dokumenty (${this.documents.length})`;
                             toggleBtn.className = 'btn btn--secondary';
                         } else {
-                            toggleBtn.textContent = '📂 Pokaż wszystkie dokumenty';
+                            toggleBtn.textContent = 'Pokaż wszystkie dokumenty';
                             toggleBtn.className = 'btn btn--outline';
                         }
                     }
@@ -3842,13 +3842,13 @@ async initializeScanner() {
                         <h3 style="color: var(--elmar-primary); margin-bottom: 1rem;">Dokument wydania #${doc.id}</h3>
                         
                         <div style="background: var(--elmar-background); padding: 15px; border-radius: 5px; margin-bottom: 1rem;">
-                            <p><strong>👤 Magazynier:</strong> ${this.escapeHtml(doc.worker)}</p>
-                            <p><strong>📅 Data:</strong> ${new Date(doc.date).toLocaleDateString('pl-PL')}</p>
-                            <p><strong>🕐 Utworzono:</strong> ${new Date(doc.createdAt).toLocaleString('pl-PL')}</p>
-                            ${doc.notes ? `<p><strong>📝 Uwagi:</strong> ${this.escapeHtml(doc.notes)}</p>` : ''}
+                            <p><strong>Magazynier:</strong> ${this.escapeHtml(doc.worker)}</p>
+                            <p><strong>Data:</strong> ${new Date(doc.date).toLocaleDateString('pl-PL')}</p>
+                            <p><strong>Utworzono:</strong> ${new Date(doc.createdAt).toLocaleString('pl-PL')}</p>
+                            ${doc.notes ? `<p><strong>Uwagi:</strong> ${this.escapeHtml(doc.notes)}</p>` : ''}
                         </div>
 
-                        <h4 style="margin: 1.5rem 0 1rem;">📦 Produkty (${doc.products.length})</h4>
+                        <h4 style="margin: 1.5rem 0 1rem;">Produkty (${doc.products.length})</h4>
                         <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
                             <thead>
                                 <tr style="background: var(--elmar-primary); color: white;">
@@ -3997,9 +3997,9 @@ async initializeScanner() {
                                            style="margin-right: 10px; transform: scale(1.2);">
                                     <strong>Dokument #${doc.id}</strong>
                                     <div style="font-size: 0.9rem; margin-left: 28px; margin-top: 5px; color: #666;">
-                                        👤 ${this.escapeHtml(doc.worker)} | 
-                                        📦 ${doc.products.length} produktów (${doc.products.reduce((sum, p) => sum + p.quantity, 0)} szt.)
-                                        ${doc.notes ? '<br>📝 ' + this.escapeHtml(doc.notes) : ''}
+                                        ${this.escapeHtml(doc.worker)} |
+                                        ${doc.products.length} produktów (${doc.products.reduce((sum, p) => sum + p.quantity, 0)} szt.)
+                                        ${doc.notes ? '<br>' + this.escapeHtml(doc.notes) : ''}
                                     </div>
                                 </label>
                             `).join('')}
@@ -4675,10 +4675,10 @@ async initializeScanner() {
 
             showNotification(message, type = 'info') {
                 const icons = {
-                    success: '✓',
-                    error: '✕',
-                    warning: '⚠',
-                    info: 'ℹ'
+                    success: '',
+                    error: '',
+                    warning: '',
+                    info: ''
                 };
 
                 const colors = {
@@ -4877,7 +4877,7 @@ async initializeScanner() {
             }
 
             deleteAllDocuments() {
-                const confirmMessage = `⚠️ UWAGA! ⚠️
+                const confirmMessage = `UWAGA!
 
 Czy na pewno chcesz usunąć WSZYSTKIE dokumenty (${this.documents.length})?
 
@@ -4938,11 +4938,11 @@ Czy jesteś absolutnie pewien?`;
                                                 Dokument #${doc.id}
                                             </div>
                                             <div style="font-size: 0.85rem; color: var(--text-secondary);">
-                                                📅 ${new Date(doc.date).toLocaleDateString('pl-PL')} |
-                                                👤 ${this.escapeHtml(doc.worker)} |
-                                                📦 ${totalItems} poz. (${totalQuantity} szt.)
+                                                ${new Date(doc.date).toLocaleDateString('pl-PL')} |
+                                                ${this.escapeHtml(doc.worker)} |
+                                                ${totalItems} poz. (${totalQuantity} szt.)
                                             </div>
-                                            ${doc.notes ? `<div style="font-size: 0.8rem; color: #999; margin-top: 4px;">💬 ${this.escapeHtml(doc.notes)}</div>` : ''}
+                                            ${doc.notes ? `<div style="font-size: 0.8rem; color: #999; margin-top: 4px;">${this.escapeHtml(doc.notes)}</div>` : ''}
                                         </div>
                                     </label>
                                 `;
@@ -4978,7 +4978,7 @@ Czy jesteś absolutnie pewien?`;
 
                 const selectedIds = Array.from(checkboxes).map(cb => Number(cb.value));
 
-                const confirmMessage = `⚠️ UWAGA! ⚠️
+                const confirmMessage = `UWAGA!
 
 Czy na pewno chcesz usunąć ${selectedIds.length} zaznaczonych dokumentów?
 
@@ -5148,7 +5148,7 @@ Czy jesteś pewien?`;
                 resultsContainer.innerHTML = `
                     <div style="background: white; padding: var(--space-lg); border-radius: 8px; box-shadow: var(--shadow-md);">
                         <h4 style="color: var(--elmar-primary); margin-bottom: var(--space-md);">
-                            📋 Zestawienie za okres ${new Date(dateFrom).toLocaleDateString('pl-PL')} - ${new Date(dateTo).toLocaleDateString('pl-PL')}
+                            Zestawienie za okres ${new Date(dateFrom).toLocaleDateString('pl-PL')} - ${new Date(dateTo).toLocaleDateString('pl-PL')}
                         </h4>
 
                         <div style="overflow-x: auto;">
