@@ -143,7 +143,7 @@
         position: relative;
     }
 
-    /* Animated Gradient Background Layer 1 */
+    /* Animated Gradient Background Layer 1 - Simplified for performance */
     body::before {
         content: '';
         position: fixed;
@@ -156,14 +156,13 @@
             radial-gradient(circle at 80% 80%, rgba(19, 176, 214, 0.12) 0%, transparent 50%),
             radial-gradient(circle at 40% 90%, rgba(255, 107, 107, 0.08) 0%, transparent 50%);
         z-index: -2;
-        animation: morphBackground 20s ease-in-out infinite;
-        /* GPU acceleration */
-        will-change: transform, opacity;
+        /* Remove heavy animation, use lighter opacity-only animation */
+        animation: fadeBackground 15s ease-in-out infinite;
         transform: translateZ(0);
         backface-visibility: hidden;
     }
 
-    /* Animated Gradient Background Layer 2 */
+    /* Animated Gradient Background Layer 2 - Simplified for performance */
     body::after {
         content: '';
         position: fixed;
@@ -175,38 +174,34 @@
             radial-gradient(circle at 60% 20%, rgba(139, 92, 246, 0.06) 0%, transparent 40%),
             radial-gradient(circle at 90% 50%, rgba(236, 72, 153, 0.05) 0%, transparent 40%);
         z-index: -1;
-        animation: morphBackground 25s ease-in-out infinite reverse;
-        /* GPU acceleration */
-        will-change: transform, opacity;
+        /* Remove heavy animation, use lighter opacity-only animation */
+        animation: fadeBackground 20s ease-in-out infinite reverse;
         transform: translateZ(0);
         backface-visibility: hidden;
     }
 
-    @keyframes morphBackground {
-        0%, 100% { opacity: 1; transform: scale(1); }
-        50% { opacity: 0.8; transform: scale(1.1); }
+    /* Lighter animation - only opacity, no scale */
+    @keyframes fadeBackground {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.7; }
     }
     
-    /* Glassmorphism 2.0 */
+    /* Glassmorphism 2.0 - Optimized */
     .glass-card {
         background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.7) 100%);
-        backdrop-filter: blur(30px) saturate(180%);
-        -webkit-backdrop-filter: blur(30px) saturate(180%);
+        backdrop-filter: blur(20px) saturate(150%);
+        -webkit-backdrop-filter: blur(20px) saturate(150%);
         border: 1px solid rgba(255, 255, 255, 0.5);
         box-shadow:
             0 8px 32px 0 rgba(10, 116, 144, 0.15),
             inset 0 1px 0 0 rgba(255, 255, 255, 0.8);
         border-radius: var(--radius-xl);
         transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1),
-                    box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1),
-                    border-color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+                    box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         position: relative;
         overflow: hidden;
-        /* GPU acceleration */
-        will-change: transform;
         transform: translateZ(0);
         backface-visibility: hidden;
-        /* Layout containment */
         contain: layout style paint;
     }
 
@@ -228,11 +223,10 @@
     }
 
     .glass-card:hover {
-        transform: translateY(-6px) scale(1.02) translateZ(0);
+        transform: translateY(-6px) translateZ(0);
         box-shadow:
             0 16px 48px 0 rgba(10, 116, 144, 0.25),
             inset 0 1px 0 0 rgba(255, 255, 255, 1);
-        border-color: rgba(255, 255, 255, 0.8);
     }
 
     /* Glass Card Variants */
@@ -374,15 +368,16 @@
             inset 0 1px 0 rgba(255, 255, 255, 0.3);
     }
 
+    /* Removed heavy rotateGradient animation for performance */
     .header::before {
         content: '';
         position: absolute;
-        top: -50%;
-        left: -50%;
-        width: 200%;
-        height: 200%;
-        background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%);
-        animation: rotateGradient 30s linear infinite;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.1) 0%, transparent 60%);
+        animation: pulseHeader 8s ease-in-out infinite;
     }
 
     .header::after {
@@ -395,9 +390,10 @@
         background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent);
     }
 
-    @keyframes rotateGradient {
-        from { transform: rotate(0deg); }
-        to { transform: rotate(360deg); }
+    /* Lighter animation - only opacity */
+    @keyframes pulseHeader {
+        0%, 100% { opacity: 0.5; }
+        50% { opacity: 1; }
     }
 
     .header > * {
@@ -410,12 +406,8 @@
         width: auto;
         margin-bottom: var(--space-sm);
         filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
-        animation: floatLogo 3s ease-in-out infinite;
-    }
-
-    @keyframes floatLogo {
-        0%, 100% { transform: translateY(0px); }
-        50% { transform: translateY(-10px); }
+        /* Removed constant floatLogo animation for better performance */
+        transform: translateZ(0);
     }
 
     .header h1 {
@@ -524,13 +516,9 @@
             var(--shadow-md),
             0 0 0 1px rgba(255, 255, 255, 0.3),
             0 0 20px rgba(19, 176, 214, 0.15);
-        /* GPU acceleration */
-        will-change: transform;
         transform: translateZ(0);
         backface-visibility: hidden;
-        /* Better touch targets for mobile */
         -webkit-tap-highlight-color: transparent;
-        /* Layout containment */
         contain: layout style paint;
     }
 
@@ -1962,6 +1950,76 @@
         margin-top: var(--space-md);
         color: var(--text-secondary);
         font-weight: 500;
+    }
+
+    /* ============================================
+       MOBILE PERFORMANCE OPTIMIZATIONS
+       Reduce expensive effects on mobile devices
+       ============================================ */
+    @media (max-width: 768px) {
+        /* Reduce blur effects - very expensive on mobile */
+        .glass-card {
+            backdrop-filter: blur(10px) saturate(120%);
+            -webkit-backdrop-filter: blur(10px) saturate(120%);
+        }
+
+        .glass-card--secondary {
+            backdrop-filter: blur(8px) saturate(120%);
+            -webkit-backdrop-filter: blur(8px) saturate(120%);
+        }
+
+        .header {
+            backdrop-filter: blur(10px) saturate(150%);
+            -webkit-backdrop-filter: blur(10px) saturate(150%);
+        }
+
+        .modal-content {
+            backdrop-filter: blur(15px) saturate(140%);
+            -webkit-backdrop-filter: blur(15px) saturate(140%);
+        }
+
+        .modal {
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+        }
+
+        /* Simplify animations on mobile */
+        .screen {
+            animation-duration: 0.4s;
+        }
+
+        .modal.active,
+        .modal-content {
+            animation-duration: 0.4s;
+        }
+
+        /* Remove expensive box shadows on mobile */
+        .btn:active {
+            transform: scale(0.97) translateZ(0);
+        }
+
+        /* Optimize table rendering */
+        .products-table {
+            contain: layout style;
+        }
+    }
+
+    /* Extra optimizations for very small devices */
+    @media (max-width: 480px) {
+        .glass-card {
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
+
+        .header {
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
+
+        .modal-content {
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
     }
 
 </style>
