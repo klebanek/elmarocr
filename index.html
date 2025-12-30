@@ -2499,7 +2499,7 @@
                     Po dodaniu wszystkich produktów:<br>
                     <strong>Krok 1:</strong> Kliknij <strong>"Zakończ i zapisz"</strong><br>
                     <strong>Krok 2:</strong> Dokument zostanie zapisany w liście dokumentów<br>
-                    <strong>Krok 3:</strong> Możesz wyeksportować dokument do PDF lub Excel
+                    <strong>Krok 3:</strong> Możesz wygenerować PDF lub wysłać dokument do biura
                 </p>
             </div>
 
@@ -3018,14 +3018,27 @@
             }
 
             showModal(modalId) {
+                // Close any previously open modals first
+                const allModals = document.querySelectorAll('.modal.active');
+                allModals.forEach(m => {
+                    m.classList.remove('active');
+                });
+
                 // Prevent body scroll when modal is open
                 document.body.style.overflow = 'hidden';
 
                 const modal = document.getElementById(modalId);
                 modal.classList.add('active');
 
-                // Ensure modal is visible
+                // Scroll both modal and modal-content to top
                 modal.scrollTop = 0;
+                const modalContent = modal.querySelector('.modal-content');
+                if (modalContent) {
+                    modalContent.scrollTop = 0;
+                }
+
+                // Scroll window to top as well
+                window.scrollTo(0, 0);
 
                 setTimeout(() => {
                     const firstInput = modal.querySelector('input[type="text"], input[type="number"]');
