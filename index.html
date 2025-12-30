@@ -1983,8 +1983,8 @@
         </div>
         <div class="container">
             <div class="form-actions" style="margin-bottom: var(--space-lg);">
-                <button class="btn btn--primary" onclick="app.importProductDatabase()">📥 Import Excel</button>
-                <button class="btn btn--secondary" onclick="app.exportProductDatabase()">📤 Export Excel</button>
+                <button class="btn btn--primary" onclick="app.importProductDatabase()">Import Excel</button>
+                <button class="btn btn--secondary" onclick="app.exportProductDatabase()">Export Excel</button>
             </div>
             
             <div class="database-stats">
@@ -2296,12 +2296,31 @@
         <div class="container">
             <!-- Toggle button for showing all documents -->
             <div style="margin-bottom: var(--space-lg); text-align: center;">
-                <button class="btn btn--secondary" id="toggleAllDocsBtn" onclick="app.toggleAllDocuments()">📂 Pokaż wszystkie dokumenty</button>
+                <button class="btn btn--secondary" id="toggleAllDocsBtn" onclick="app.toggleAllDocuments()">Pokaż wszystkie dokumenty</button>
             </div>
 
-            <!-- Data range and summary section -->
-            <div class="glass-card" style="padding: var(--space-lg); margin-bottom: var(--space-lg);">
-                <h3 style="margin-bottom: var(--space-md); color: var(--elmar-primary);">📊 Podsumowanie za okres</h3>
+            <!-- Documents List -->
+            <div class="documents-list" id="documentsList" style="margin-bottom: var(--space-xl);">
+                <!-- Documents populated by JS -->
+            </div>
+
+            <!-- Main action buttons -->
+            <div class="form-actions" style="margin-bottom: var(--space-2xl);">
+                <button class="btn btn--outline" id="generatePdfBtn">Wygeneruj PDF</button>
+                <button class="btn btn--secondary" id="sendToOfficeBtn">Wyślij do biura</button>
+                <button class="btn btn--primary" id="endWorkBtn">Zakończ pracę</button>
+            </div>
+
+            <!-- Summary toggle button -->
+            <div style="margin-bottom: var(--space-md); text-align: center;">
+                <button class="btn btn--outline" id="toggleSummaryBtn" onclick="app.toggleSummarySection()" style="max-width: 400px;">
+                    PODSUMOWANIE
+                </button>
+            </div>
+
+            <!-- Collapsible summary section -->
+            <div id="summarySection" class="glass-card" style="padding: var(--space-lg); margin-bottom: var(--space-xl); display: none; overflow: hidden; transition: all 0.4s ease;">
+                <h3 style="margin-bottom: var(--space-md); color: var(--elmar-primary);">Podsumowanie za okres</h3>
                 <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md); margin-bottom: var(--space-md);">
                     <div>
                         <label class="form-label" for="summaryDateFrom">Data od</label>
@@ -2312,27 +2331,17 @@
                         <input type="date" class="form-control" id="summaryDateTo">
                     </div>
                 </div>
-                <button class="btn btn--primary" style="width: 100%;" onclick="app.generateSummary()">📈 Generuj podsumowanie</button>
+                <button class="btn btn--primary" style="width: 100%;" onclick="app.generateSummary()">Generuj podsumowanie</button>
 
                 <!-- Summary results -->
                 <div id="summaryResults" style="margin-top: var(--space-lg);"></div>
             </div>
 
-            <!-- Import/Export buttons -->
+            <!-- Import/Export buttons (50% smaller) -->
             <div class="form-actions" style="margin-bottom: var(--space-lg);">
-                <button class="btn btn--outline" onclick="app.exportToJSON()">📥 Export JSON</button>
-                <button class="btn btn--outline" onclick="app.importFromJSON()">📤 Import JSON</button>
-                <button class="btn btn--outline" onclick="app.bulkDelete()" style="color: var(--elmar-error); border-color: var(--elmar-error);">🗑️ Usuń zbiorczo</button>
-            </div>
-
-            <div class="documents-list" id="documentsList">
-                <!-- Documents populated by JS -->
-            </div>
-
-            <div class="form-actions">
-                <button class="btn btn--outline" id="generatePdfBtn">📄 Wygeneruj PDF</button>
-                <button class="btn btn--secondary" id="sendToOfficeBtn">📧 Wyślij do biura</button>
-                <button class="btn btn--primary" id="endWorkBtn">Zakończ pracę</button>
+                <button class="btn btn--outline btn--sm" onclick="app.exportToJSON()">Export JSON</button>
+                <button class="btn btn--outline btn--sm" onclick="app.importFromJSON()">Import JSON</button>
+                <button class="btn btn--outline btn--sm" onclick="app.bulkDelete()" style="color: var(--elmar-error); border-color: var(--elmar-error);">Usuń zbiorczo</button>
             </div>
 
             <!-- Hidden file input for JSON import -->
@@ -3722,13 +3731,13 @@ async initializeScanner() {
                                 <h4 style="margin: 0;">Dokument wydania #${doc.id}</h4>
                                 <div style="display: flex; gap: 0.5rem;">
                                     <button class="btn btn--sm btn--outline" onclick="app.viewDocument('${doc.id}')" title="Podgląd">
-                                        👁️
+                                        Podgląd
                                     </button>
                                     <button class="btn btn--sm btn--outline" onclick="app.editDocument('${doc.id}')" title="Edytuj">
-                                        ✏️
+                                        Edytuj
                                     </button>
                                     <button class="btn btn--sm btn--outline" onclick="app.deleteDocument('${doc.id}')" style="color: var(--elmar-error); border-color: var(--elmar-error);" title="Usuń">
-                                        🗑️
+                                        Usuń
                                     </button>
                                 </div>
                             </div>
@@ -4731,7 +4740,38 @@ async initializeScanner() {
                     subtitle.textContent = this.showAllDocuments ? 'Wszystkie dokumenty' : 'Dzisiejsze dokumenty';
                 }
 
+                // Update button text without emoji
+                const toggleBtn = document.getElementById('toggleAllDocsBtn');
+                if (toggleBtn) {
+                    if (this.showAllDocuments) {
+                        toggleBtn.textContent = 'Pokaż tylko dzisiejsze';
+                    } else {
+                        if (this.documents.length > 0) {
+                            toggleBtn.textContent = `Pokaż wszystkie dokumenty (${this.documents.length})`;
+                        } else {
+                            toggleBtn.textContent = 'Pokaż wszystkie dokumenty';
+                        }
+                    }
+                }
+
                 this.updateDocumentsList();
+            }
+
+            toggleSummarySection() {
+                const summarySection = document.getElementById('summarySection');
+                const toggleBtn = document.getElementById('toggleSummaryBtn');
+
+                if (summarySection.style.display === 'none') {
+                    summarySection.style.display = 'block';
+                    toggleBtn.textContent = 'ZWIŃ PODSUMOWANIE ▲';
+                    // Smooth scroll to summary
+                    setTimeout(() => {
+                        summarySection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    }, 100);
+                } else {
+                    summarySection.style.display = 'none';
+                    toggleBtn.textContent = 'PODSUMOWANIE';
+                }
             }
 
             // Bulk Delete Functions
@@ -4744,7 +4784,7 @@ async initializeScanner() {
                 // Create modal with choice
                 const modalHtml = `
                     <div style="background: white; padding: var(--space-xl); border-radius: var(--radius-lg); max-width: 500px; text-align: center;">
-                        <h3 style="color: var(--elmar-primary); margin-bottom: var(--space-lg);">🗑️ Usuwanie dokumentów</h3>
+                        <h3 style="color: var(--elmar-primary); margin-bottom: var(--space-lg);">Usuwanie dokumentów</h3>
                         <p style="margin-bottom: var(--space-xl); color: var(--text-secondary);">
                             Wybierz opcję usuwania:
                         </p>
@@ -4801,7 +4841,7 @@ Czy jesteś absolutnie pewien?`;
 
                 const modalHtml = `
                     <div style="background: white; padding: var(--space-xl); border-radius: var(--radius-lg); max-width: 700px; max-height: 80vh; overflow-y: auto;">
-                        <h3 style="color: var(--elmar-primary); margin-bottom: var(--space-md);">🗑️ Wybierz dokumenty do usunięcia</h3>
+                        <h3 style="color: var(--elmar-primary); margin-bottom: var(--space-md);">Wybierz dokumenty do usunięcia</h3>
                         <p style="margin-bottom: var(--space-lg); color: var(--text-secondary); font-size: 0.9rem;">
                             Zaznacz dokumenty, które chcesz usunąć:
                         </p>
@@ -4840,7 +4880,7 @@ Czy jesteś absolutnie pewien?`;
 
                         <div style="border-top: 2px solid var(--elmar-border); padding-top: var(--space-lg); display: flex; gap: var(--space-md); flex-wrap: wrap;">
                             <button class="btn btn--primary" onclick="app.deleteSelectedDocuments()" style="flex: 1; min-width: 200px;">
-                                🗑️ Usuń zaznaczone
+                                Usuń zaznaczone
                             </button>
                             <button class="btn btn--outline" onclick="this.closest('.modal-backdrop').remove()" style="flex: 1; min-width: 150px;">
                                 Anuluj
@@ -5077,7 +5117,7 @@ Czy jesteś pewien?`;
                         </div>
 
                         <div style="background: var(--elmar-background); padding: var(--space-md); border-radius: 8px; border-left: 4px solid var(--elmar-primary);">
-                            <h5 style="margin: 0 0 var(--space-sm) 0; color: var(--elmar-primary);">📊 Podsumowanie</h5>
+                            <h5 style="margin: 0 0 var(--space-sm) 0; color: var(--elmar-primary);">Podsumowanie</h5>
                             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--space-md);">
                                 <div>
                                     <div style="font-size: 0.85rem; color: var(--text-secondary);">Liczba dokumentów</div>
@@ -5095,8 +5135,8 @@ Czy jesteś pewien?`;
                         </div>
 
                         <div style="margin-top: var(--space-lg); display: flex; gap: var(--space-sm);">
-                            <button class="btn btn--primary" onclick="app.exportSummaryToExcel('${dateFrom}', '${dateTo}')">📊 Eksport do Excel</button>
-                            <button class="btn btn--outline" onclick="document.getElementById('summaryResults').innerHTML = ''">✕ Zamknij</button>
+                            <button class="btn btn--primary" onclick="app.exportSummaryToExcel('${dateFrom}', '${dateTo}')">Eksport do Excel</button>
+                            <button class="btn btn--outline" onclick="document.getElementById('summaryResults').innerHTML = ''">Zamknij</button>
                         </div>
                     </div>
                 `;
