@@ -38,6 +38,23 @@ export default function NewDocumentPage() {
     };
   }, []);
 
+  // Scroll to top and lock body when any modal is open
+  useEffect(() => {
+    const isAnyModalOpen = showScanner || showQuantityModal || showAddProduct;
+    if (isAnyModalOpen) {
+      // Scroll to top so modal is visible
+      window.scrollTo({ top: 0, behavior: 'instant' });
+      // Lock body scroll
+      document.body.style.overflow = 'hidden';
+    } else {
+      // Restore scroll
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [showScanner, showQuantityModal, showAddProduct]);
+
   // Initialize scanner when modal opens
   useEffect(() => {
     if (showScanner && typeof window !== 'undefined') {
