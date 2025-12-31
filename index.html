@@ -3822,11 +3822,8 @@ async initializeScanner() {
 
                 this.clearManualEntryForm();
 
-                // Automatically start scanner for next product - PRZYSPIESZONE
-                this.showNotification('Produkt dodany! Skanuj następny...', 'success');
-                setTimeout(() => {
-                    this.startScanner();
-                }, 150);
+                // Potwierdzenie dodania produktu
+                this.showNotification('Produkt dodany pomyślnie', 'success');
             }
 
             addNewProduct() {
@@ -3853,11 +3850,8 @@ async initializeScanner() {
                 document.getElementById('newProductQuantity').value = '1';
                 this.clearManualEntryForm();
 
-                // Automatically start scanner for next product - PRZYSPIESZONE
-                this.showNotification('Nowy produkt dodany! Skanuj następny...', 'success');
-                setTimeout(() => {
-                    this.startScanner();
-                }, 150);
+                // Potwierdzenie dodania produktu
+                this.showNotification('Nowy produkt dodany pomyślnie', 'success');
             }
 
             addProductToDocument(barcode, productName, quantity) {
