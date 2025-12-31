@@ -3024,23 +3024,22 @@
             }
 
             showModal(modalId) {
-                // FIRST: Scroll to top BEFORE doing anything else
-                window.scrollTo(0, 0);
-                document.documentElement.scrollTop = 0;
-                document.body.scrollTop = 0;
-
                 // Close any previously open modals first
                 const allModals = document.querySelectorAll('.modal.active');
                 allModals.forEach(m => {
                     m.classList.remove('active');
                 });
 
-                // Save current scroll position and freeze page at top
-                const scrollY = window.scrollY || window.pageYOffset || document.documentElement.scrollTop;
-                document.body.style.position = 'fixed';
-                document.body.style.top = '0px';
-                document.body.style.width = '100%';
-                document.body.style.overflow = 'hidden';
+                // FORCE immediate scroll to top - multiple methods for reliability
+                window.scrollTo(0, 0);
+                document.documentElement.scrollTop = 0;
+                document.body.scrollTop = 0;
+
+                // Also scroll main document screen to top if exists
+                const mainScreen = document.getElementById('mainDocumentScreen');
+                if (mainScreen) {
+                    mainScreen.scrollTop = 0;
+                }
 
                 const modal = document.getElementById(modalId);
                 modal.classList.add('active');
@@ -3052,6 +3051,9 @@
                     modalContent.scrollTop = 0;
                 }
 
+                // Prevent body scroll when modal is open
+                document.body.style.overflow = 'hidden';
+
                 setTimeout(() => {
                     const firstInput = modal.querySelector('input[type="text"], input[type="number"]');
                     if (firstInput) {
@@ -3062,10 +3064,7 @@
             }
 
             hideModal(modalId) {
-                // Restore body to normal state
-                document.body.style.position = '';
-                document.body.style.top = '';
-                document.body.style.width = '';
+                // Re-enable body scroll
                 document.body.style.overflow = '';
 
                 document.getElementById(modalId).classList.remove('active');
@@ -5248,16 +5247,16 @@ Czy jesteś pewien?`;
             }
 
             showDynamicModal(htmlContent) {
-                // FIRST: Scroll to top BEFORE doing anything else
+                // FORCE immediate scroll to top - multiple methods for reliability
                 window.scrollTo(0, 0);
                 document.documentElement.scrollTop = 0;
                 document.body.scrollTop = 0;
 
-                // Freeze page at top
-                document.body.style.position = 'fixed';
-                document.body.style.top = '0px';
-                document.body.style.width = '100%';
-                document.body.style.overflow = 'hidden';
+                // Also scroll main document screen to top if exists
+                const mainScreen = document.getElementById('mainDocumentScreen');
+                if (mainScreen) {
+                    mainScreen.scrollTop = 0;
+                }
 
                 const modal = document.createElement('div');
                 modal.className = 'modal-backdrop';
@@ -5280,13 +5279,13 @@ Czy jesteś pewien?`;
                 modal.addEventListener('click', (e) => {
                     if (e.target === modal) {
                         modal.remove();
-                        // Restore body to normal state
-                        document.body.style.position = '';
-                        document.body.style.top = '';
-                        document.body.style.width = '';
+                        // Re-enable body scroll
                         document.body.style.overflow = '';
                     }
                 });
+
+                // Prevent body scroll when modal is open
+                document.body.style.overflow = 'hidden';
 
                 document.body.appendChild(modal);
             }
