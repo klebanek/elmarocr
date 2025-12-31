@@ -93,11 +93,11 @@
         --radius-xl: 1.5rem;
         --radius-full: 9999px;
 
-        /* Transitions */
-        --transition: all 0.6s ease;
-        --transition-fast: 300ms cubic-bezier(0.4, 0, 0.2, 1);
-        --transition-base: 600ms cubic-bezier(0.4, 0, 0.2, 1);
-        --transition-slow: 1000ms cubic-bezier(0.4, 0, 0.2, 1);
+        /* Transitions - PRZYSPIESZONE o 50-70% */
+        --transition: all 0.2s ease;
+        --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+        --transition-base: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+        --transition-slow: 400ms cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     /* Performance optimizations */
@@ -120,7 +120,7 @@
     }
 
     body {
-        transition: background-color 0.6s ease, color 0.6s ease;
+        transition: background-color 0.2s ease, color 0.2s ease;
         /* GPU acceleration */
         transform: translateZ(0);
         -webkit-font-smoothing: antialiased;
@@ -196,8 +196,8 @@
             0 8px 32px 0 rgba(10, 116, 144, 0.15),
             inset 0 1px 0 0 rgba(255, 255, 255, 0.8);
         border-radius: var(--radius-xl);
-        transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1),
-                    box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1),
+                    box-shadow 0.15s cubic-bezier(0.4, 0, 0.2, 1);
         position: relative;
         overflow: hidden;
         transform: translateZ(0);
@@ -213,7 +213,7 @@
         width: 100%;
         height: 100%;
         background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
-        transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         will-change: transform;
         transform: translateX(0) translateZ(0);
     }
@@ -568,7 +568,7 @@
         background: var(--primary-gradient);
         color: var(--elmar-text-light);
         background-size: 200% 200%;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
         box-shadow:
             0 4px 6px -1px rgba(0, 0, 0, 0.1),
             0 0 0 1px rgba(255, 255, 255, 0.4),
@@ -595,7 +595,7 @@
         background: var(--elmar-surface);
         color: var(--elmar-primary);
         border: 2px solid var(--elmar-primary);
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
         box-shadow:
             0 4px 6px -1px rgba(0, 0, 0, 0.1),
             0 0 20px rgba(19, 176, 214, 0.2),
@@ -620,7 +620,7 @@
         background: transparent;
         color: var(--elmar-primary);
         border: 2px solid var(--elmar-border);
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
         box-shadow:
             0 2px 4px rgba(0, 0, 0, 0.05),
             0 0 15px rgba(19, 176, 214, 0.15);
@@ -715,7 +715,7 @@
         border: 2px solid transparent;
         border-radius: 12px;
         font-size: var(--font-size-base);
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
         background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.7) 100%);
         backdrop-filter: blur(10px);
         -webkit-backdrop-filter: blur(10px);
@@ -900,17 +900,17 @@
     }
     
     .products-table tbody tr {
-        animation: slideInRight 0.6s ease-out;
+        animation: slideInRight 0.25s ease-out;
         animation-fill-mode: both;
-        transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    .products-table tbody tr:nth-child(1) { animation-delay: 0.05s; }
-    .products-table tbody tr:nth-child(2) { animation-delay: 0.1s; }
-    .products-table tbody tr:nth-child(3) { animation-delay: 0.15s; }
-    .products-table tbody tr:nth-child(4) { animation-delay: 0.2s; }
-    .products-table tbody tr:nth-child(5) { animation-delay: 0.25s; }
-    .products-table tbody tr:nth-child(n+6) { animation-delay: 0.3s; }
+    .products-table tbody tr:nth-child(1) { animation-delay: 0.02s; }
+    .products-table tbody tr:nth-child(2) { animation-delay: 0.04s; }
+    .products-table tbody tr:nth-child(3) { animation-delay: 0.06s; }
+    .products-table tbody tr:nth-child(4) { animation-delay: 0.08s; }
+    .products-table tbody tr:nth-child(5) { animation-delay: 0.1s; }
+    .products-table tbody tr:nth-child(n+6) { animation-delay: 0.12s; }
 
     .products-table tbody tr:hover {
         background: rgba(4, 98, 118, 0.08);
@@ -1181,7 +1181,7 @@
         z-index: 100;
         box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5);
         border-radius: 12px;
-        transition: all 0.3s ease;
+        transition: all 0.15s ease;
         pointer-events: none;
     }
 
@@ -1189,7 +1189,7 @@
         border-color: var(--success-color);
         background: rgba(16, 185, 129, 0.2);
         box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.3), 0 0 30px rgba(16, 185, 129, 0.8);
-        animation: successPulse 0.5s ease;
+        animation: successPulse 0.25s ease;
     }
 
     @keyframes successPulse {
@@ -1208,7 +1208,7 @@
         border-right: none;
         border-bottom: none;
         border-radius: 8px 0 0 0;
-        transition: border-color 0.3s ease;
+        transition: border-color 0.15s ease;
     }
 
     .scanner-overlay.scanning-success::before {
@@ -1226,7 +1226,7 @@
         border-left: none;
         border-top: none;
         border-radius: 0 0 8px 0;
-        transition: border-color 0.3s ease;
+        transition: border-color 0.15s ease;
     }
 
     .scanner-overlay.scanning-success::after {
@@ -1253,7 +1253,7 @@
 
     .scanner-overlay-label.success {
         background: rgba(16, 185, 129, 0.9);
-        animation: labelSuccess 0.3s ease;
+        animation: labelSuccess 0.15s ease;
     }
 
     @keyframes labelSuccess {
@@ -1272,7 +1272,7 @@
         border-left: none;
         border-bottom: none;
         border-radius: 0 8px 0 0;
-        transition: border-color 0.3s ease;
+        transition: border-color 0.15s ease;
     }
 
     .scanner-overlay.scanning-success .scanner-corners {
@@ -1289,7 +1289,7 @@
         border-right: none;
         border-top: none;
         border-radius: 0 0 0 8px;
-        transition: border-color 0.3s ease;
+        transition: border-color 0.15s ease;
     }
 
     .scanner-overlay.scanning-success .scanner-corners-bottom-left {
@@ -1323,7 +1323,7 @@
         bottom: 0;
         background: rgba(0, 0, 0, 0);
         z-index: 10000;
-        transition: background 0.3s ease;
+        transition: background 0.15s ease;
         padding: var(--space-lg);
         overflow-y: auto;
         -webkit-overflow-scrolling: touch;
@@ -1336,7 +1336,7 @@
         background: rgba(0, 0, 0, 0.6);
         backdrop-filter: blur(8px);
         -webkit-backdrop-filter: blur(8px);
-        animation: fadeIn 0.6s ease;
+        animation: fadeIn 0.2s ease;
     }
 
     .modal-content {
@@ -1352,7 +1352,7 @@
             0 20px 60px rgba(0, 0, 0, 0.3),
             inset 0 1px 0 rgba(255, 255, 255, 0.9),
             0 0 0 1px rgba(10, 116, 144, 0.1);
-        animation: scaleIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+        animation: scaleIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
         transform-origin: center;
         position: relative;
         overflow: hidden;
@@ -1934,7 +1934,7 @@
         align-items: center;
         justify-content: center;
         z-index: 9999;
-        animation: fadeIn 0.6s ease;
+        animation: fadeIn 0.2s ease;
     }
 
     .loading-content {
@@ -1943,7 +1943,7 @@
         border-radius: 16px;
         text-align: center;
         box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-        animation: scaleIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+        animation: scaleIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
 
     .loading-content p {
@@ -1985,12 +1985,12 @@
 
         /* Simplify animations on mobile */
         .screen {
-            animation-duration: 0.4s;
+            animation-duration: 0.15s;
         }
 
         .modal.active,
         .modal-content {
-            animation-duration: 0.4s;
+            animation-duration: 0.15s;
         }
 
         /* Remove expensive box shadows on mobile */
@@ -3455,7 +3455,7 @@ async initializeScanner() {
                     setTimeout(() => {
                         this.stopScanner();       // wyłącz kamerę po animacji
                         this.processBarcodeDetection(code);
-                    }, 300);
+                    }, 150);
                     return;
                 }
             } catch (e) {
@@ -3508,7 +3508,7 @@ async initializeScanner() {
                         setTimeout(() => {
                             this.stopScanner();
                             this.processBarcodeDetection(code);
-                        }, 300);
+                        }, 150);
                     }
                 });
 
@@ -3812,11 +3812,11 @@ async initializeScanner() {
 
                 this.clearManualEntryForm();
 
-                // Automatically start scanner for next product
+                // Automatically start scanner for next product - PRZYSPIESZONE
                 this.showNotification('Produkt dodany! Skanuj następny...', 'success');
                 setTimeout(() => {
                     this.startScanner();
-                }, 300);
+                }, 150);
             }
 
             addNewProduct() {
@@ -3843,11 +3843,11 @@ async initializeScanner() {
                 document.getElementById('newProductQuantity').value = '1';
                 this.clearManualEntryForm();
 
-                // Automatically start scanner for next product
+                // Automatically start scanner for next product - PRZYSPIESZONE
                 this.showNotification('Nowy produkt dodany! Skanuj następny...', 'success');
                 setTimeout(() => {
                     this.startScanner();
-                }, 300);
+                }, 150);
             }
 
             addProductToDocument(barcode, productName, quantity) {
@@ -4949,7 +4949,7 @@ async initializeScanner() {
                     z-index: 9999;
                     opacity: 0;
                     transform: translateX(400px) scale(0.8);
-                    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+                    transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
                     max-width: 320px;
                     word-wrap: break-word;
                     display: flex;
@@ -4989,7 +4989,7 @@ async initializeScanner() {
                     notification.style.transform = 'translateX(0) scale(1)';
                 }, 10);
 
-                // Slide out animation
+                // Slide out animation - PRZYSPIESZONE
                 setTimeout(() => {
                     notification.style.opacity = '0';
                     notification.style.transform = 'translateX(400px) scale(0.8)';
@@ -4997,15 +4997,15 @@ async initializeScanner() {
                         if (notification.parentNode) {
                             notification.parentNode.removeChild(notification);
                         }
-                    }, 400);
-                }, 3000);
+                    }, 200);
+                }, 2000);
             }
 
             initializeResponsiveFeatures() {
                 window.addEventListener('resize', () => {
                     if (this.scannerActive) {
                         this.stopScanner();
-                        setTimeout(() => this.initializeScanner(), 500);
+                        setTimeout(() => this.initializeScanner(), 250);
                     }
                 });
 
@@ -5013,9 +5013,9 @@ async initializeScanner() {
                     setTimeout(() => {
                         if (this.scannerActive) {
                             this.stopScanner();
-                            setTimeout(() => this.initializeScanner(), 1000);
+                            setTimeout(() => this.initializeScanner(), 500);
                         }
-                    }, 500);
+                    }, 250);
                 });
 
                 this.addTouchInteractions();
