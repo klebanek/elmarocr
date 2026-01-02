@@ -4127,32 +4127,12 @@ async initializeScanner() {
                         </table>
 
                         <div style="margin-top: 1.5rem; display: flex; gap: 0.5rem; justify-content: flex-end;">
-                            <button class="btn btn--outline" onclick="this.closest('div').parentElement.remove()">Zamknij</button>
+                            <button class="btn btn--outline" onclick="app.closeDynamicModal(this)">Zamknij</button>
                         </div>
                     </div>
                 `;
 
-                // Tworzenie modala
-                const modal = document.createElement('div');
-                modal.style.cssText = `
-                    position: fixed;
-                    top: 0;
-                    left: 0;
-                    right: 0;
-                    bottom: 0;
-                    background: rgba(0, 0, 0, 0.5);
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    z-index: 10000;
-                    padding: 20px;
-                    overflow-y: auto;
-                `;
-                modal.innerHTML = detailsHtml;
-                modal.onclick = (e) => {
-                    if (e.target === modal) modal.remove();
-                };
-                document.body.appendChild(modal);
+                this.showDynamicModal(detailsHtml);
             }
 
             editDocument(docId) {
@@ -4234,16 +4214,16 @@ async initializeScanner() {
             showDocumentSelectionModal(docs, action) {
                 const actionText = action === 'generate' ? 'Generuj PDF' : 'Wyślij do biura';
                 const modalHtml = `
-                    <div style="background: white; padding: 20px; border-radius: 8px; max-width: 600px;">
-                        <h3 style="color: var(--elmar-primary); margin-bottom: 1rem;">Wybierz dokumenty</h3>
-                        <p style="margin-bottom: 1rem; color: #666;">Zaznacz dokumenty, które chcesz ${action === 'generate' ? 'wygenerować' : 'wysłać'}:</p>
-                        
-                        <div id="docSelectionList" style="max-height: 400px; overflow-y: auto; margin-bottom: 1rem;">
+                    <div style="background: white; padding: var(--space-xl); border-radius: var(--radius-lg); max-width: 600px;">
+                        <h3 style="color: var(--elmar-primary); margin-bottom: var(--space-md);">Wybierz dokumenty</h3>
+                        <p style="margin-bottom: var(--space-md); color: var(--text-secondary);">Zaznacz dokumenty, które chcesz ${action === 'generate' ? 'wygenerować' : 'wysłać'}:</p>
+
+                        <div id="docSelectionList" style="max-height: 400px; overflow-y: auto; margin-bottom: var(--space-md);">
                             ${docs.map((doc, index) => `
-                                <label style="display: block; padding: 12px; background: var(--elmar-background); margin-bottom: 8px; border-radius: 5px; cursor: pointer; border: 2px solid transparent;" 
-                                       onmouseover="this.style.borderColor='var(--elmar-primary)'" 
+                                <label style="display: block; padding: 12px; background: var(--elmar-background); margin-bottom: 8px; border-radius: 5px; cursor: pointer; border: 2px solid transparent;"
+                                       onmouseover="this.style.borderColor='var(--elmar-primary)'"
                                        onmouseout="this.style.borderColor='transparent'">
-                                    <input type="checkbox" value="${doc.id}" ${index === 0 ? 'checked' : ''} 
+                                    <input type="checkbox" value="${doc.id}" ${index === 0 ? 'checked' : ''}
                                            style="margin-right: 10px; transform: scale(1.2);">
                                     <strong>Dokument #${doc.id}</strong>
                                     <div style="font-size: 0.9rem; margin-left: 28px; margin-top: 5px; color: #666;">
@@ -4255,7 +4235,7 @@ async initializeScanner() {
                             `).join('')}
                         </div>
 
-                        <div style="display: flex; gap: 0.5rem; justify-content: space-between; align-items: center;">
+                        <div style="display: flex; gap: 0.5rem; justify-content: space-between; align-items: center; flex-wrap: wrap;">
                             <label style="font-size: 0.9rem; color: #666; cursor: pointer;">
                                 <input type="checkbox" id="selectAllDocs" onchange="
                                     const checkboxes = document.querySelectorAll('#docSelectionList input[type=checkbox]');
@@ -4264,7 +4244,7 @@ async initializeScanner() {
                                 Zaznacz wszystkie
                             </label>
                             <div style="display: flex; gap: 0.5rem;">
-                                <button class="btn btn--outline" onclick="this.closest('div').parentElement.parentElement.remove()">Anuluj</button>
+                                <button class="btn btn--outline" onclick="app.closeDynamicModal(this)">Anuluj</button>
                                 <button class="btn btn--primary" onclick="
                                     const checkboxes = Array.from(document.querySelectorAll('#docSelectionList input[type=checkbox]:checked'));
                                     const selectedIds = checkboxes.map(cb => Number(cb.value));
@@ -4273,7 +4253,7 @@ async initializeScanner() {
                                         return;
                                     }
                                     const selectedDocs = app.documents.filter(d => selectedIds.includes(d.id));
-                                    this.closest('div').parentElement.parentElement.remove();
+                                    app.closeDynamicModal(this);
                                     if ('${action}' === 'generate') {
                                         app.generatePdfForDocs(selectedDocs);
                                     } else {
@@ -4285,26 +4265,7 @@ async initializeScanner() {
                     </div>
                 `;
 
-                const modal = document.createElement('div');
-                modal.style.cssText = `
-                    position: fixed;
-                    top: 0;
-                    left: 0;
-                    right: 0;
-                    bottom: 0;
-                    background: rgba(0, 0, 0, 0.5);
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    z-index: 10000;
-                    padding: 20px;
-                    overflow-y: auto;
-                `;
-                modal.innerHTML = modalHtml;
-                modal.onclick = (e) => {
-                    if (e.target === modal) modal.remove();
-                };
-                document.body.appendChild(modal);
+                this.showDynamicModal(modalHtml);
             }
 
             generatePdfForDocs(selectedDocs) {
