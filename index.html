@@ -2119,6 +2119,14 @@
                 </svg>
                 Pomoc - Jak korzystać z aplikacji
             </button>
+            <button class="btn btn--outline" id="installPwaBtn" style="margin-top: var(--space-md); padding: var(--space-sm) var(--space-md); font-size: var(--font-size-sm); display: none;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+                    <polyline points="7 10 12 15 17 10"/>
+                    <line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+                Zainstaluj aplikację
+            </button>
         </div>
         <footer class="footer">
             <div class="footer-content">
@@ -5579,7 +5587,16 @@ Czy jesteś pewien?`;
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             deferredPrompt = e;
-            
+
+            // Show the install button on start screen
+            const installPwaBtn = document.getElementById('installPwaBtn');
+            if (installPwaBtn) {
+                installPwaBtn.style.display = 'flex';
+                installPwaBtn.addEventListener('click', () => {
+                    installApp();
+                });
+            }
+
             const installBanner = document.createElement('div');
             installBanner.innerHTML = `
                 <div style="
@@ -5615,6 +5632,11 @@ Czy jesteś pewien?`;
                     }
                     deferredPrompt = null;
                     dismissInstallBanner();
+                    // Hide the install button after installation
+                    const installPwaBtn = document.getElementById('installPwaBtn');
+                    if (installPwaBtn) {
+                        installPwaBtn.style.display = 'none';
+                    }
                 });
             }
         }
