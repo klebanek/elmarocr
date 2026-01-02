@@ -5277,6 +5277,11 @@ Czy jesteś pewien?`;
                     m.remove();
                 });
 
+                // Scroll viewport to top so user sees the modal (which appears at top on mobile)
+                window.scrollTo({ top: 0, behavior: 'instant' });
+                document.documentElement.scrollTop = 0;
+                document.body.scrollTop = 0;
+
                 const modal = document.createElement('div');
                 modal.className = 'modal-backdrop';
 
