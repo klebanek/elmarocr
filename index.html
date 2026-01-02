@@ -3041,8 +3041,8 @@
                     m.classList.remove('active');
                 });
 
-                // FORCE immediate scroll to top - multiple methods for reliability
-                window.scrollTo(0, 0);
+                // Scroll viewport to top so user sees the modal (which appears at top on mobile)
+                window.scrollTo({ top: 0, behavior: 'instant' });
                 document.documentElement.scrollTop = 0;
                 document.body.scrollTop = 0;
 
@@ -3616,26 +3616,15 @@ async initializeScanner() {
                 this.stopScanner();
                 this.showScreen('mainDocumentScreen');
 
-                // FORCE SCROLL TO TOP PRZED OTWARCIEM MODALA!!!
-                window.scrollTo(0, 0);
-                document.documentElement.scrollTop = 0;
-                document.body.scrollTop = 0;
-
                 if (this.productDatabase[barcode]) {
                     this.currentBarcode = barcode;
                     document.getElementById('quantityProductName').textContent = this.productDatabase[barcode];
                     document.getElementById('productQuantity').value = 1;
-
-                    // DODATKOWE przewinięcie tuż przed modalem
-                    window.scrollTo(0, 0);
                     this.showModal('quantityModal');
                 } else {
                     this.currentBarcode = barcode;
                     document.getElementById('unknownBarcode').textContent = barcode;
                     document.getElementById('newProductQuantity').value = 1;
-
-                    // DODATKOWE przewinięcie tuż przed modalem
-                    window.scrollTo(0, 0);
                     this.showModal('newProductModal');
                 }
             }
