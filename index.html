@@ -5121,13 +5121,13 @@ async initializeScanner() {
                             Wybierz opcję usuwania:
                         </p>
                         <div style="display: flex; flex-direction: column; gap: var(--space-md);">
-                            <button class="btn btn--primary" onclick="app.deleteAllDocuments(); this.closest('.modal-backdrop').remove();" style="width: 100%;">
+                            <button class="btn btn--primary" onclick="app.deleteAllDocuments(); app.closeDynamicModal(this);" style="width: 100%;">
                                 Usuń wszystkie dokumenty (${this.documents.length})
                             </button>
-                            <button class="btn btn--secondary" onclick="app.showDeleteSelectionModal(); this.closest('.modal-backdrop').remove();" style="width: 100%;">
+                            <button class="btn btn--secondary" onclick="app.closeDynamicModal(this); app.showDeleteSelectionModal();" style="width: 100%;">
                                 Wybierz dokumenty do usunięcia
                             </button>
-                            <button class="btn btn--outline" onclick="this.closest('.modal-backdrop').remove();" style="width: 100%;">
+                            <button class="btn btn--outline" onclick="app.closeDynamicModal(this);" style="width: 100%;">
                                 Anuluj
                             </button>
                         </div>
@@ -5214,7 +5214,7 @@ Czy jesteś absolutnie pewien?`;
                             <button class="btn btn--primary" onclick="app.deleteSelectedDocuments()" style="flex: 1; min-width: 200px;">
                                 Usuń zaznaczone
                             </button>
-                            <button class="btn btn--outline" onclick="this.closest('.modal-backdrop').remove()" style="flex: 1; min-width: 150px;">
+                            <button class="btn btn--outline" onclick="app.closeDynamicModal(this)" style="flex: 1; min-width: 150px;">
                                 Anuluj
                             </button>
                         </div>
@@ -5253,56 +5253,69 @@ Czy jesteś pewien?`;
                     this.documents = this.documents.filter(doc => !selectedIds.includes(doc.id));
                     localStorage.setItem('elmarDocuments', JSON.stringify(this.documents));
 
-                    // Close modal
+                    // Close modal and restore scroll
                     const modal = document.querySelector('.modal-backdrop');
                     if (modal) modal.remove();
+                    document.body.style.overflow = '';
 
                     this.updateDocumentsList();
                     this.showNotification(`Usunięto ${selectedIds.length} dokumentów`, 'success');
                 }
             }
 
-            showDynamicModal(htmlContent) {
-                // FORCE immediate scroll to top - multiple methods for reliability
-                window.scrollTo(0, 0);
-                document.documentElement.scrollTop = 0;
-                document.body.scrollTop = 0;
+            // Helper function to close dynamic modal and restore scroll
+            closeDynamicModal(element) {
+                const modal = element ? element.closest('.modal-backdrop') : document.querySelector('.modal-backdrop');
+                if (modal) modal.remove();
+                document.body.style.overflow = '';
+            }
 
-                // Also scroll main document screen to top if exists
-                const mainScreen = document.getElementById('mainDocumentScreen');
-                if (mainScreen) {
-                    mainScreen.scrollTop = 0;
-                }
+            showDynamicModal(htmlContent) {
+                // Remove any existing dynamic modals first
+                const existingModals = document.querySelectorAll('.modal-backdrop');
+                existingModals.forEach(m => {
+                    m.remove();
+                });
 
                 const modal = document.createElement('div');
                 modal.className = 'modal-backdrop';
 
-                // Check if mobile device
-                const isMobile = window.innerWidth <= 768;
+                // Check if mobile device (width or height constrained)
+                const isMobile = window.innerWidth <= 768 || window.innerHeight <= 600;
 
                 modal.style.cssText = `
                     position: fixed;
                     top: 0;
                     left: 0;
-                    width: 100%;
-                    height: 100%;
-                    background: rgba(0, 0, 0, 0.5);
+                    right: 0;
+                    bottom: 0;
+                    background: rgba(0, 0, 0, 0.6);
                     display: flex;
                     align-items: ${isMobile ? 'flex-start' : 'center'};
                     justify-content: center;
-                    z-index: 10000;
-                    padding: ${isMobile ? 'var(--space-lg) var(--space-md)' : 'var(--space-md)'};
-                    padding-top: ${isMobile ? 'calc(env(safe-area-inset-top, 20px) + var(--space-lg))' : 'var(--space-md)'};
+                    z-index: 10001;
+                    padding: var(--space-md);
+                    padding-top: ${isMobile ? 'calc(env(safe-area-inset-top, 10px) + var(--space-lg))' : 'var(--space-md)'};
                     overflow-y: auto;
                     -webkit-overflow-scrolling: touch;
+                    backdrop-filter: blur(4px);
+                    -webkit-backdrop-filter: blur(4px);
                 `;
-                modal.innerHTML = htmlContent;
 
-                // Close on backdrop click
+                // Wrap content in a container with proper styling
+                const contentWrapper = document.createElement('div');
+                contentWrapper.style.cssText = `
+                    max-height: ${isMobile ? '90vh' : '85vh'};
+                    overflow-y: auto;
+                    margin: ${isMobile ? '0' : 'auto'};
+                `;
+                contentWrapper.innerHTML = htmlContent;
+                modal.appendChild(contentWrapper);
+
+                // Close on backdrop click (not on content click)
                 modal.addEventListener('click', (e) => {
                     if (e.target === modal) {
                         modal.remove();
-                        // Re-enable body scroll
                         document.body.style.overflow = '';
                     }
                 });
@@ -5311,6 +5324,9 @@ Czy jesteś pewien?`;
                 document.body.style.overflow = 'hidden';
 
                 document.body.appendChild(modal);
+
+                // Ensure modal content is scrolled to top
+                contentWrapper.scrollTop = 0;
             }
 
             // Export/Import Functions
