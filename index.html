@@ -72,8 +72,8 @@
         --text-3xl: 2rem;
         --text-4xl: 2.5rem;
 
-        --font-size-xs: 0.75rem;
-        --font-size-sm: 0.875rem;
+        --font-size-xs: 0.8rem;
+        --font-size-sm: 0.9rem;
         --font-size-base: 1rem;
         --font-size-lg: 1.125rem;
         --font-size-xl: 1.25rem;
@@ -895,7 +895,7 @@
         .products-table th,
         .products-table td {
             padding: var(--space-lg);
-            font-size: var(--font-size-sm);
+            font-size: var(--font-size-base);
         }
     }
     
@@ -1437,12 +1437,12 @@
 
         /* Responsive summary table */
         #summaryResults table {
-            font-size: 0.75rem !important;
+            font-size: var(--font-size-sm) !important;
         }
 
         #summaryResults th,
         #summaryResults td {
-            padding: 8px 4px !important;
+            padding: 10px 6px !important;
         }
 
         #summaryResults .glass-card {
@@ -1478,14 +1478,14 @@
     }
 
     .footer-author {
-        font-size: 11px;
+        font-size: var(--font-size-sm);
         opacity: 0.9;
         text-align: center;
         line-height: 1.4;
     }
 
     .footer-contact {
-        font-size: 10px;
+        font-size: var(--font-size-xs);
         opacity: 0.85;
         text-align: center;
     }
@@ -1502,7 +1502,7 @@
     }
 
     .footer-copyright {
-        font-size: 9px;
+        font-size: var(--font-size-xs);
         opacity: 0.75;
         text-align: center;
         margin-top: 2px;
@@ -1568,8 +1568,8 @@
         
         .products-table th,
         .products-table td {
-            padding: var(--space-sm);
-            font-size: var(--font-size-xs);
+            padding: var(--space-md);
+            font-size: var(--font-size-base);
         }
         
         .product-actions {
@@ -4069,7 +4069,7 @@ async initializeScanner() {
                                 <strong>Produkty:</strong> ${doc.products.length} pozycji,
                                 łącznie ${doc.products.reduce((sum, p) => sum + p.quantity, 0)} sztuk
                             </div>
-                            <p style="font-size: 0.8rem; color: #666; margin-top: 1rem;">
+                            <p style="font-size: 0.9rem; color: #666; margin-top: 1rem;">
                                 Utworzono: ${new Date(doc.createdAt).toLocaleString('pl-PL')}
                             </p>
                         </div>
