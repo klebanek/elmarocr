@@ -2490,7 +2490,8 @@
                     <strong>Krok 1:</strong> Kliknij przycisk <strong>"Skanuj kod"</strong><br>
                     <strong>Krok 2:</strong> Przyłóż kod kreskowy do ramki na ekranie<br>
                     <strong>Krok 3:</strong> Kod zostanie automatycznie odczytany<br>
-                    <strong>Krok 4:</strong> Potwierdź ilość sztuk i kliknij <strong>"Dodaj"</strong>
+                    <strong>Krok 4:</strong> Wprowadź ilość sztuk i <strong>termin ważności</strong><br>
+                    <strong>Krok 5:</strong> Kliknij <strong>"Dodaj"</strong>
                 </p>
                 <p style="background: #f0f9ff; padding: var(--space-md); border-radius: 8px; margin-top: var(--space-sm);">
                     <strong>Wskazówka:</strong> Upewnij się, że kod jest dobrze oświetlony i mieści się w ramce skanowania.
@@ -2510,7 +2511,7 @@
                     <li><strong>Wyszukać po nazwie</strong> - zacznij wpisywać nazwę produktu w polu wyszukiwania, wybierz z listy</li>
                 </ul>
                 <p style="line-height: 1.8;">
-                    <strong>Krok 3:</strong> Wprowadź ilość sztuk<br>
+                    <strong>Krok 3:</strong> Wprowadź ilość sztuk i <strong>termin ważności</strong><br>
                     <strong>Krok 4:</strong> Kliknij <strong>"Dodaj produkt"</strong>
                 </p>
             </div>
@@ -2525,7 +2526,7 @@
                 <ul style="margin-left: var(--space-lg); line-height: 1.8;">
                     <li>Aplikacja pokaże okno <strong>"Nieznany kod produktu"</strong></li>
                     <li>Wpisz nazwę nowego produktu</li>
-                    <li>Wprowadź ilość</li>
+                    <li>Wprowadź ilość i <strong>termin ważności</strong></li>
                     <li>Kliknij <strong>"Dodaj"</strong></li>
                     <li>Produkt zostanie zapisany w bazie dla przyszłych użyć</li>
                 </ul>
@@ -2539,14 +2540,28 @@
                     W tabeli z produktami możesz:
                 </p>
                 <ul style="margin-left: var(--space-lg); line-height: 1.8;">
-                    <li>Kliknąć <strong>"Edytuj"</strong> - aby zmienić ilość lub dodać uwagi</li>
+                    <li>Kliknąć <strong>"Edytuj"</strong> - aby zmienić ilość, termin ważności lub dodać uwagi</li>
                     <li>Kliknąć <strong>"Usuń"</strong> - aby usunąć produkt z dokumentu</li>
                 </ul>
             </div>
 
             <div style="margin-bottom: var(--space-xl);">
                 <h4 style="color: var(--elmar-primary); margin-bottom: var(--space-sm); border-bottom: 2px solid var(--elmar-primary); padding-bottom: 8px;">
-                    6. Zakończenie i zapisanie dokumentu
+                    6. Termin ważności produktów
+                </h4>
+                <p style="line-height: 1.8;">
+                    Każdy dodawany produkt wymaga podania terminu ważności. Ważne informacje:
+                </p>
+                <ul style="margin-left: var(--space-lg); line-height: 1.8;">
+                    <li>Produkty z <strong>tym samym kodem kreskowym</strong>, ale <strong>różnymi terminami ważności</strong> są traktowane jako <strong>osobne pozycje</strong> na dokumencie wydania</li>
+                    <li>Dodanie tego samego produktu z <strong>tym samym terminem ważności</strong> automatycznie <strong>zwiększa ilość</strong> istniejącej pozycji</li>
+                    <li>Termin ważności jest widoczny w tabeli produktów oraz na wygenerowanym PDF</li>
+                </ul>
+            </div>
+
+            <div style="margin-bottom: var(--space-xl);">
+                <h4 style="color: var(--elmar-primary); margin-bottom: var(--space-sm); border-bottom: 2px solid var(--elmar-primary); padding-bottom: 8px;">
+                    7. Zakończenie i zapisanie dokumentu
                 </h4>
                 <p style="line-height: 1.8;">
                     Po dodaniu wszystkich produktów:<br>
@@ -2558,7 +2573,7 @@
 
             <div style="margin-bottom: var(--space-xl);">
                 <h4 style="color: var(--elmar-primary); margin-bottom: var(--space-sm); border-bottom: 2px solid var(--elmar-primary); padding-bottom: 8px;">
-                    7. Zarządzanie bazą produktów
+                    8. Zarządzanie bazą produktów
                 </h4>
                 <p style="line-height: 1.8;">
                     W menu głównym wybierz <strong>"Zarządzaj bazą produktów"</strong>:
@@ -2576,9 +2591,21 @@
                 <h4 style="color: #16a34a; margin-bottom: var(--space-sm);">Przydatne wskazówki</h4>
                 <ul style="margin-left: var(--space-lg); line-height: 1.8;">
                     <li>Wszystkie dane są zapisywane lokalnie w przeglądarce</li>
-                    <li>Aplikacja działa offline po pierwszym załadowaniu</li>
                     <li>Regularnie eksportuj dane jako backup</li>
                     <li>Możesz pracować na wielu dokumentach jednocześnie</li>
+                </ul>
+            </div>
+
+            <div style="background: #e0f2fe; padding: var(--space-lg); border-radius: 8px; border-left: 4px solid #0284c7; margin-top: var(--space-lg);">
+                <h4 style="color: #0284c7; margin-bottom: var(--space-sm);">Instalacja aplikacji na urządzeniu</h4>
+                <p style="line-height: 1.8; margin-bottom: var(--space-sm);">
+                    Aplikację ELMAR PWA można <strong>zainstalować na urządzeniu</strong> (telefon, tablet, komputer) i będzie działać <strong>jak natywna aplikacja</strong>:
+                </p>
+                <ul style="margin-left: var(--space-lg); line-height: 1.8;">
+                    <li>Kliknij przycisk <strong>"Zainstaluj aplikację"</strong> na ekranie głównym lub użyj opcji instalacji w przeglądarce</li>
+                    <li>Po instalacji aplikacja pojawi się na ekranie głównym urządzenia</li>
+                    <li>Aplikacja będzie <strong>w pełni funkcjonalna również bez dostępu do internetu</strong></li>
+                    <li>Wszystkie dane są przechowywane lokalnie na urządzeniu</li>
                 </ul>
             </div>
 
