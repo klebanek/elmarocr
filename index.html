@@ -2262,13 +2262,14 @@
                                 <th>Nazwa produktu</th>
                                 <th>Kod kreskowy</th>
                                 <th>Ilość</th>
+                                <th>Termin ważności</th>
                                 <th>Uwagi</th>
                                 <th>Akcje</th>
                             </tr>
                         </thead>
                         <tbody id="productsTableBody">
                             <tr class="empty-state">
-                                <td colspan="6">Brak produktów. Dodaj pierwszy produkt używając skanera lub wprowadź ręcznie.</td>
+                                <td colspan="7">Brak produktów. Dodaj pierwszy produkt używając skanera lub wprowadź ręcznie.</td>
                             </tr>
                         </tbody>
                     </table>
@@ -2402,6 +2403,10 @@
                     <label class="form-label" for="productQuantity">Ilość sztuk *</label>
                     <input type="number" class="form-control" id="productQuantity" min="1" value="1" required>
                 </div>
+                <div class="form-group">
+                    <label class="form-label" for="productExpiryDate">Termin ważności *</label>
+                    <input type="date" class="form-control" id="productExpiryDate" required>
+                </div>
                 <div class="form-actions">
                     <button type="button" class="btn btn--secondary" id="cancelQuantityBtn">Anuluj</button>
                     <button type="submit" class="btn btn--primary">Dodaj</button>
@@ -2424,6 +2429,10 @@
                     <label class="form-label" for="newProductQuantity">Ilość *</label>
                     <input type="number" class="form-control" id="newProductQuantity" min="1" value="1" required>
                 </div>
+                <div class="form-group">
+                    <label class="form-label" for="newProductExpiryDate">Termin ważności *</label>
+                    <input type="date" class="form-control" id="newProductExpiryDate" required>
+                </div>
                 <div class="form-actions">
                     <button type="button" class="btn btn--secondary" id="cancelNewProductBtn">Anuluj</button>
                     <button type="submit" class="btn btn--primary">Dodaj nowy produkt</button>
@@ -2441,6 +2450,10 @@
                 <div class="form-group">
                     <label class="form-label" for="editProductQuantity">Ilość *</label>
                     <input type="number" class="form-control" id="editProductQuantity" min="1" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="editProductExpiryDate">Termin ważności *</label>
+                    <input type="date" class="form-control" id="editProductExpiryDate" required>
                 </div>
                 <div class="form-group">
                     <label class="form-label" for="editProductNotes">Uwagi</label>
@@ -3839,6 +3852,7 @@ async initializeScanner() {
 
             addProductWithQuantity() {
                 const quantity = parseInt(document.getElementById('productQuantity').value);
+                const expiryDate = document.getElementById('productExpiryDate').value;
                 const productName = this.productDatabase[this.currentBarcode];
 
                 if (!quantity || quantity < 1) {
@@ -3846,9 +3860,16 @@ async initializeScanner() {
                     return;
                 }
 
-                this.addProductToDocument(this.currentBarcode, productName, quantity);
+                if (!expiryDate) {
+                    alert('Proszę wprowadzić termin ważności');
+                    return;
+                }
+
+                this.addProductToDocument(this.currentBarcode, productName, quantity, expiryDate);
                 this.hideModal('quantityModal');
 
+                // Reset form
+                document.getElementById('productExpiryDate').value = '';
                 this.clearManualEntryForm();
 
                 // Potwierdzenie dodania produktu
@@ -3858,6 +3879,7 @@ async initializeScanner() {
             addNewProduct() {
                 const productName = document.getElementById('newProductName').value.trim();
                 const quantity = parseInt(document.getElementById('newProductQuantity').value);
+                const expiryDate = document.getElementById('newProductExpiryDate').value;
 
                 if (!productName) {
                     alert('Proszę wprowadzić nazwę produktu');
@@ -3869,28 +3891,35 @@ async initializeScanner() {
                     return;
                 }
 
+                if (!expiryDate) {
+                    alert('Proszę wprowadzić termin ważności');
+                    return;
+                }
+
                 this.productDatabase[this.currentBarcode] = productName;
                 this.saveCustomProductToStorage(this.currentBarcode, productName);
 
-                this.addProductToDocument(this.currentBarcode, productName, quantity);
+                this.addProductToDocument(this.currentBarcode, productName, quantity, expiryDate);
                 this.hideModal('newProductModal');
 
                 document.getElementById('newProductName').value = '';
                 document.getElementById('newProductQuantity').value = '1';
+                document.getElementById('newProductExpiryDate').value = '';
                 this.clearManualEntryForm();
 
                 // Potwierdzenie dodania produktu
                 this.showNotification('Nowy produkt dodany pomyślnie', 'success');
             }
 
-            addProductToDocument(barcode, productName, quantity) {
+            addProductToDocument(barcode, productName, quantity, expiryDate) {
                 if (!this.currentDocument) {
                     alert('Błąd: Brak aktywnego dokumentu');
                     return;
                 }
 
-                const existingIndex = this.currentDocument.products.findIndex(p => p.barcode === barcode);
-                
+                // Każdy produkt z innym terminem ważności to osobna pozycja
+                const existingIndex = this.currentDocument.products.findIndex(p => p.barcode === barcode && p.expiryDate === expiryDate);
+
                 if (existingIndex !== -1) {
                     this.currentDocument.products[existingIndex].quantity += quantity;
                     this.showNotification(`Zaktualizowano ilość produktu: ${productName}`, 'success');
@@ -3899,6 +3928,7 @@ async initializeScanner() {
                         barcode: barcode,
                         name: productName,
                         quantity: quantity,
+                        expiryDate: expiryDate,
                         notes: '',
                         addedAt: new Date().toISOString()
                     });
@@ -3911,11 +3941,11 @@ async initializeScanner() {
 
             updateProductsTable() {
                 const tbody = document.getElementById('productsTableBody');
-                
+
                 if (!this.currentDocument || this.currentDocument.products.length === 0) {
                     tbody.innerHTML = `
                         <tr class="empty-state">
-                            <td colspan="6">Brak produktów. Dodaj pierwszy produkt używając skanera lub wprowadź ręcznie.</td>
+                            <td colspan="7">Brak produktów. Dodaj pierwszy produkt używając skanera lub wprowadź ręcznie.</td>
                         </tr>
                     `;
                     document.getElementById('finishAndSaveBtn').disabled = true;
@@ -3926,6 +3956,7 @@ async initializeScanner() {
                             <td data-label="Nazwa produktu">${this.escapeHtml(product.name)}</td>
                             <td data-label="Kod kreskowy">${product.barcode}</td>
                             <td data-label="Ilość">${product.quantity}</td>
+                            <td data-label="Termin ważności">${product.expiryDate ? this.formatDate(product.expiryDate) : '-'}</td>
                             <td data-label="Uwagi" class="product-notes">
                                 ${product.notes ? `<span class="notes-preview" title="${this.escapeHtml(product.notes)}">${this.escapeHtml(product.notes.substring(0, 30))}${product.notes.length > 30 ? '...' : ''}</span>` : '<span class="notes-empty">Brak uwag</span>'}
                             </td>
@@ -3937,6 +3968,12 @@ async initializeScanner() {
                     `).join('');
                     document.getElementById('finishAndSaveBtn').disabled = false;
                 }
+            }
+
+            formatDate(dateString) {
+                if (!dateString) return '-';
+                const date = new Date(dateString);
+                return date.toLocaleDateString('pl-PL');
             }
 
             editProduct(index) {
@@ -3952,6 +3989,7 @@ async initializeScanner() {
                 // Populate the modal with product data
                 document.getElementById('editProductName').textContent = product.name;
                 document.getElementById('editProductQuantity').value = product.quantity;
+                document.getElementById('editProductExpiryDate').value = product.expiryDate || '';
                 document.getElementById('editProductNotes').value = product.notes || '';
 
                 // Show the modal
@@ -3964,6 +4002,7 @@ async initializeScanner() {
                 }
 
                 const quantity = parseInt(document.getElementById('editProductQuantity').value);
+                const expiryDate = document.getElementById('editProductExpiryDate').value;
                 const notes = document.getElementById('editProductNotes').value.trim();
 
                 if (!quantity || quantity < 1) {
@@ -3971,8 +4010,14 @@ async initializeScanner() {
                     return;
                 }
 
+                if (!expiryDate) {
+                    alert('Proszę wprowadzić termin ważności');
+                    return;
+                }
+
                 // Update product
                 this.currentDocument.products[this.currentEditIndex].quantity = quantity;
+                this.currentDocument.products[this.currentEditIndex].expiryDate = expiryDate;
                 this.currentDocument.products[this.currentEditIndex].notes = notes;
 
                 // Update table and save
@@ -4134,6 +4179,7 @@ async initializeScanner() {
                                     <th style="padding: 8px; text-align: left;">LP</th>
                                     <th style="padding: 8px; text-align: left;">Nazwa produktu</th>
                                     <th style="padding: 8px; text-align: center;">Ilość</th>
+                                    <th style="padding: 8px; text-align: center;">Termin ważn.</th>
                                     <th style="padding: 8px; text-align: left;">Uwagi</th>
                                 </tr>
                             </thead>
@@ -4143,13 +4189,14 @@ async initializeScanner() {
                                         <td style="padding: 8px;">${index + 1}</td>
                                         <td style="padding: 8px;">${this.escapeHtml(product.name)}</td>
                                         <td style="padding: 8px; text-align: center; font-weight: 500;">${product.quantity}</td>
+                                        <td style="padding: 8px; text-align: center;">${product.expiryDate ? new Date(product.expiryDate).toLocaleDateString('pl-PL') : '-'}</td>
                                         <td style="padding: 8px; font-size: 0.85rem; color: #666;">${product.notes ? this.escapeHtml(product.notes) : '-'}</td>
                                     </tr>
                                 `).join('')}
                             </tbody>
                             <tfoot>
                                 <tr style="background: var(--elmar-background); font-weight: bold;">
-                                    <td colspan="3" style="padding: 8px;">SUMA:</td>
+                                    <td colspan="4" style="padding: 8px;">SUMA:</td>
                                     <td style="padding: 8px; text-align: center;">${doc.products.reduce((sum, p) => sum + p.quantity, 0)} szt.</td>
                                 </tr>
                             </tfoot>
@@ -4301,6 +4348,12 @@ async initializeScanner() {
                 try {
                     const { jsPDF } = window.jspdf;
 
+                    // Funkcja formatująca datę
+                    const formatDateForPdf = (dateString) => {
+                        if (!dateString) return '-';
+                        return new Date(dateString).toLocaleDateString('pl-PL');
+                    };
+
                     // Funkcja konwertująca polskie znaki na łacińskie (wymagane dla standardowych czcionek PDF)
                     const removePolishChars = (text) => {
                         if (!text) return text;
@@ -4386,10 +4439,16 @@ async initializeScanner() {
                             const barcodeImage = generateBarcodeImage(product.barcode);
                             barcodeImages.push(barcodeImage);
 
+                            // Format expiry date for PDF
+                            const expiryDateFormatted = product.expiryDate
+                                ? new Date(product.expiryDate).toLocaleDateString('pl-PL')
+                                : '-';
+
                             tableData.push([
                                 index + 1,
                                 removePolishChars(product.name),
                                 product.quantity,
+                                expiryDateFormatted,
                                 product.barcode,
                                 '', // Placeholder dla kodu graficznego
                                 product.notes ? removePolishChars(product.notes) : '-'
@@ -4400,7 +4459,7 @@ async initializeScanner() {
                         // Szerokość strony A4: 210mm, z marginesami (10mm z każdej strony) = 190mm dostępne
                         doc.autoTable({
                             startY: yPos,
-                            head: [['LP', 'Nazwa produktu', 'Ilosc', 'Kod kreskowy', 'Kod graficzny', 'Uwagi']],
+                            head: [['LP', 'Nazwa produktu', 'Ilosc', 'Termin wazn.', 'Kod kreskowy', 'Kod graficzny', 'Uwagi']],
                             body: tableData,
                             theme: 'grid',
                             styles: {
@@ -4410,28 +4469,29 @@ async initializeScanner() {
                             headStyles: {
                                 fillColor: [4, 98, 118],
                                 textColor: 255,
-                                fontSize: 9,
+                                fontSize: 8,
                                 fontStyle: 'bold',
                                 halign: 'center',
                                 minCellHeight: 12
                             },
                             bodyStyles: {
-                                fontSize: 8,
+                                fontSize: 7,
                                 minCellHeight: 12,
                                 cellPadding: 2
                             },
                             columnStyles: {
-                                0: { cellWidth: 10, halign: 'center' },      // LP
-                                1: { cellWidth: 60 },                         // Nazwa
-                                2: { cellWidth: 15, halign: 'center' },       // Ilość
-                                3: { cellWidth: 28, halign: 'center', fontSize: 7 }, // Kod kreskowy
-                                4: { cellWidth: 38, halign: 'center' },       // Kod graficzny
-                                5: { cellWidth: 39, fontSize: 7 }             // Uwagi
+                                0: { cellWidth: 8, halign: 'center' },       // LP
+                                1: { cellWidth: 50 },                         // Nazwa
+                                2: { cellWidth: 12, halign: 'center' },       // Ilość
+                                3: { cellWidth: 22, halign: 'center' },       // Termin ważności
+                                4: { cellWidth: 26, halign: 'center', fontSize: 6 }, // Kod kreskowy
+                                5: { cellWidth: 36, halign: 'center' },       // Kod graficzny
+                                6: { cellWidth: 36, fontSize: 6 }             // Uwagi
                             },
                             margin: { left: 10, right: 10 },
                             didDrawCell: function(data) {
-                                // Rysuj kod kreskowy w kolumnie "Kod graficzny" (indeks 4)
-                                if (data.section === 'body' && data.column.index === 4) {
+                                // Rysuj kod kreskowy w kolumnie "Kod graficzny" (indeks 5)
+                                if (data.section === 'body' && data.column.index === 5) {
                                     const barcodeImage = barcodeImages[data.row.index];
                                     if (barcodeImage) {
                                         try {
@@ -4594,10 +4654,16 @@ async initializeScanner() {
                             const barcodeImage = generateBarcodeImage(product.barcode);
                             barcodeImages.push(barcodeImage);
 
+                            // Format expiry date for PDF
+                            const expiryDateFormatted = product.expiryDate
+                                ? new Date(product.expiryDate).toLocaleDateString('pl-PL')
+                                : '-';
+
                             tableData.push([
                                 index + 1,
                                 removePolishChars(product.name),
                                 product.quantity,
+                                expiryDateFormatted,
                                 product.barcode,
                                 '', // Placeholder dla kodu graficznego
                                 product.notes ? removePolishChars(product.notes) : '-'
@@ -4608,7 +4674,7 @@ async initializeScanner() {
                         // Szerokość strony A4: 210mm, z marginesami (10mm z każdej strony) = 190mm dostępne
                         doc.autoTable({
                             startY: yPos,
-                            head: [['LP', 'Nazwa produktu', 'Ilosc', 'Kod kreskowy', 'Kod graficzny', 'Uwagi']],
+                            head: [['LP', 'Nazwa produktu', 'Ilosc', 'Termin wazn.', 'Kod kreskowy', 'Kod graficzny', 'Uwagi']],
                             body: tableData,
                             theme: 'grid',
                             styles: {
@@ -4618,28 +4684,29 @@ async initializeScanner() {
                             headStyles: {
                                 fillColor: [4, 98, 118],
                                 textColor: 255,
-                                fontSize: 9,
+                                fontSize: 8,
                                 fontStyle: 'bold',
                                 halign: 'center',
                                 minCellHeight: 12
                             },
                             bodyStyles: {
-                                fontSize: 8,
+                                fontSize: 7,
                                 minCellHeight: 12,
                                 cellPadding: 2
                             },
                             columnStyles: {
-                                0: { cellWidth: 10, halign: 'center' },      // LP
-                                1: { cellWidth: 60 },                         // Nazwa
-                                2: { cellWidth: 15, halign: 'center' },       // Ilość
-                                3: { cellWidth: 28, halign: 'center', fontSize: 7 }, // Kod kreskowy
-                                4: { cellWidth: 38, halign: 'center' },       // Kod graficzny
-                                5: { cellWidth: 39, fontSize: 7 }             // Uwagi
+                                0: { cellWidth: 8, halign: 'center' },       // LP
+                                1: { cellWidth: 50 },                         // Nazwa
+                                2: { cellWidth: 12, halign: 'center' },       // Ilość
+                                3: { cellWidth: 22, halign: 'center' },       // Termin ważności
+                                4: { cellWidth: 26, halign: 'center', fontSize: 6 }, // Kod kreskowy
+                                5: { cellWidth: 36, halign: 'center' },       // Kod graficzny
+                                6: { cellWidth: 36, fontSize: 6 }             // Uwagi
                             },
                             margin: { left: 10, right: 10 },
                             didDrawCell: function(data) {
-                                // Rysuj kod kreskowy w kolumnie "Kod graficzny" (indeks 4)
-                                if (data.section === 'body' && data.column.index === 4) {
+                                // Rysuj kod kreskowy w kolumnie "Kod graficzny" (indeks 5)
+                                if (data.section === 'body' && data.column.index === 5) {
                                     const barcodeImage = barcodeImages[data.row.index];
                                     if (barcodeImage) {
                                         try {
