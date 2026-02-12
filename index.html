@@ -4571,22 +4571,21 @@ async initializeScanner() {
                     return;
                 }
 
-                const today = new Date().toISOString().split('T')[0];
-                const todayDocs = this.documents.filter(doc => doc.date === today);
-
-                if (todayDocs.length === 0) {
-                    alert('Brak dokumentów z dzisiejszej daty');
-                    return;
-                }
+                // Sortuj dokumenty od najnowszych
+                const sortedDocs = [...this.documents].sort((a, b) => {
+                    const dateCompare = new Date(b.date) - new Date(a.date);
+                    if (dateCompare !== 0) return dateCompare;
+                    return b.id - a.id;
+                });
 
                 // Jeśli jest tylko 1 dokument - wyślij od razu
-                if (todayDocs.length === 1) {
-                    await this.sendPdfToOfficeForDocs(todayDocs);
+                if (sortedDocs.length === 1) {
+                    await this.sendPdfToOfficeForDocs(sortedDocs);
                     return;
                 }
 
                 // Jeśli więcej - pokaż wybór
-                this.showDocumentSelectionModal(todayDocs, 'send');
+                this.showDocumentSelectionModal(sortedDocs, 'send');
             }
 
             async sendPdfToOfficeForDocs(selectedDocs) {
