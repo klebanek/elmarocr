@@ -1,0 +1,15 @@
+{
+  "name": "elmar-pwa",
+  "version": "1.0.0",
+  "description": "System Śledzenia Produktów",
+  "main": "app.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "jest": "^29.0.0"
+  }
+}
