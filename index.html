@@ -3298,9 +3298,9 @@
                 }
 
                 resultsContainer.innerHTML = results.slice(0, 10).map(result => `
-                    <div class="search-result-item" onclick="app.selectSearchResult('${result.barcode}')">
+                    <div class="search-result-item" onclick="app.selectSearchResult(this.dataset.barcode)" data-barcode="${this.escapeHtml(result.barcode)}">
                         <h5>${this.highlightSearchTerm(result.name, searchTerm)}</h5>
-                        <p>Kod: ${result.barcode}</p>
+                        <p>Kod: ${this.escapeHtml(result.barcode)}</p>
                     </div>
                 `).join('');
             }
@@ -3332,8 +3332,19 @@
             }
 
             highlightSearchTerm(text, term) {
-                const regex = new RegExp(`(${term})`, 'gi');
-                return text.replace(regex, '<mark style="background: yellow; padding: 1px 2px;">$1</mark>');
+                if (!term) return this.escapeHtml(text);
+
+                // Escape special regex characters in term
+                const escapedTerm = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                const regex = new RegExp(`(${escapedTerm})`, 'gi');
+
+                // Split text by term, escape each part, and wrap matches in <mark> tags
+                const parts = String(text).split(regex);
+                return parts.map((part, index) => {
+                    const escaped = this.escapeHtml(part);
+                    // Odd indices are the captured matches
+                    return (index % 2 === 1) ? `<mark style="background: yellow; padding: 1px 2px;">${escaped}</mark>` : escaped;
+                }).join('');
             }
 
             updateDatabaseStats() {
@@ -3368,19 +3379,21 @@
                     return;
                 }
 
-                resultsContainer.innerHTML = results.slice(0, 20).map(result => `
+                resultsContainer.innerHTML = results.slice(0, 20).map(result => {
+                    const escapedBarcode = this.escapeHtml(result.barcode);
+                    return `
                     <div class="database-item">
                         <div class="database-item-info">
-                            <div class="database-item-code">${result.barcode}</div>
+                            <div class="database-item-code">${escapedBarcode}</div>
                             <div class="database-item-name">${this.highlightSearchTerm(result.name, searchTerm)}</div>
                         </div>
                         <div class="database-item-actions">
-                            <button class="btn btn--sm btn--outline" onclick="app.editDatabaseProduct('${result.barcode}')">Edytuj</button>
+                            <button class="btn btn--sm btn--outline" data-barcode="${escapedBarcode}" onclick="app.editDatabaseProduct(this.dataset.barcode)">Edytuj</button>
                             ${this.isCustomProduct(result.barcode) ? 
-                                `<button class="btn btn--sm btn--secondary" onclick="app.deleteDatabaseProduct('${result.barcode}')">Usuń</button>` : ''}
+                                `<button class="btn btn--sm btn--secondary" data-barcode="${escapedBarcode}" onclick="app.deleteDatabaseProduct(this.dataset.barcode)">Usuń</button>` : ''}
                         </div>
                     </div>
-                `).join('');
+                `}).join('');
             }
 
             isCustomProduct(barcode) {
