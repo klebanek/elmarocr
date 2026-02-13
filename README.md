@@ -44,6 +44,7 @@ elmarocr/
 ## 💾 Przechowywanie danych
 
 Aplikacja używa `localStorage` do przechowywania:
+
 - `elmarDocuments` - wszystkie dokumenty WZ
 - `elmarCurrentDocument` - dokument w edycji
 - `elmarCustomProducts` - produkty dodane ręcznie
@@ -51,6 +52,7 @@ Aplikacja używa `localStorage` do przechowywania:
 ## 🔧 Rozwój
 
 Aplikacja jest standalone - cały kod w jednym pliku `index.html`:
+
 - Inline CSS (zmienne CSS, glass morphism design)
 - Inline JavaScript (klasa `ElmarApp`)
 - Zewnętrzne biblioteki z CDN
@@ -71,6 +73,7 @@ python3 -m http.server 8000
 ## 📱 Instalacja jako PWA
 
 Aplikację można zainstalować na urządzeniu mobilnym:
+
 1. Otwórz w przeglądarce mobilnej
 2. Kliknij "Dodaj do ekranu głównego"
 3. Gotowe! Działa offline
