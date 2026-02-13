@@ -197,6 +197,14 @@ class ElmarApp {
     }
   }
 
+  debounce(func, wait) {
+    let timeout;
+    return (...args) => {
+      clearTimeout(timeout);
+      timeout = setTimeout(() => func.apply(this, args), wait);
+    };
+  }
+
   setupEventListeners() {
     document.getElementById("addDocumentBtn").addEventListener("click", () => {
       this.showScreen("documentCreationScreen");
@@ -291,13 +299,11 @@ class ElmarApp {
       this.showScreen("mainDocumentScreen");
     });
 
-    document.getElementById("productSearch").addEventListener("input", (e) => {
-      this.searchProducts(e.target.value);
-    });
+    const debouncedSearchProducts = this.debounce((e) => { this.searchProducts(e.target.value); }, 300);
+    document.getElementById("productSearch").addEventListener("input", debouncedSearchProducts);
 
-    document.getElementById("databaseSearch").addEventListener("input", (e) => {
-      this.searchDatabase(e.target.value);
-    });
+    const debouncedSearchDatabase = this.debounce((e) => { this.searchDatabase(e.target.value); }, 300);
+    document.getElementById("databaseSearch").addEventListener("input", debouncedSearchDatabase);
 
     document.getElementById("quantityForm").addEventListener("submit", (e) => {
       e.preventDefault();

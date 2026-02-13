@@ -187,4 +187,23 @@ describe("ElmarApp", () => {
     expect(app.isCustomProduct("123")).toBe(true);
     expect(app.isCustomProduct("456")).toBe(false);
   });
+
+  test("debounce should delay execution of function", () => {
+    jest.useFakeTimers();
+    const mockFn = jest.fn();
+    const debouncedFn = app.debounce(mockFn, 1000);
+
+    debouncedFn("arg1");
+    debouncedFn("arg2");
+    debouncedFn("arg3");
+
+    expect(mockFn).not.toHaveBeenCalled();
+
+    jest.runAllTimers();
+
+    expect(mockFn).toHaveBeenCalledTimes(1);
+    expect(mockFn).toHaveBeenCalledWith("arg3");
+
+    jest.useRealTimers();
+  });
 });
