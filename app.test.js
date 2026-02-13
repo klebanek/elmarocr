@@ -206,4 +206,119 @@ describe("ElmarApp", () => {
 
     jest.useRealTimers();
   });
+
+
+  describe("validateBarcodeInput", () => {
+    let mockInput;
+    let mockStatusElement;
+
+    beforeEach(() => {
+      mockInput = {
+        value: "",
+        style: {},
+      };
+
+      mockStatusElement = {
+        innerHTML: "",
+        className: "",
+        style: {},
+      };
+
+      // Spy on showBarcodeStatus to verify calls but allow original implementation
+      jest.spyOn(app, 'showBarcodeStatus');
+
+      // Override getElementById for this suite
+      document.getElementById.mockImplementation((id) => {
+        if (id === "barcodeStatus") {
+          return mockStatusElement;
+        }
+        // Return a default mock for other elements
+        return {
+          addEventListener: jest.fn(),
+          appendChild: jest.fn(),
+          classList: { add: jest.fn(), remove: jest.fn() },
+          style: {},
+          value: "",
+          textContent: "",
+          innerHTML: "",
+          querySelector: jest
+            .fn()
+            .mockReturnValue({ focus: jest.fn(), select: jest.fn() }),
+          remove: jest.fn(),
+        };
+      });
+    });
+
+    afterEach(() => {
+        // Restore document.getElementById default behavior
+        document.getElementById.mockReset();
+        document.getElementById.mockReturnValue({
+            addEventListener: jest.fn(),
+            appendChild: jest.fn(),
+            classList: { add: jest.fn(), remove: jest.fn() },
+            style: {},
+            value: "",
+            textContent: "",
+            innerHTML: "",
+            querySelector: jest
+              .fn()
+              .mockReturnValue({ focus: jest.fn(), select: jest.fn() }),
+            remove: jest.fn(),
+        });
+
+        // Restore spies
+        jest.restoreAllMocks();
+    });
+
+    test("should sanitize input by removing non-digits and truncating to 13 chars", () => {
+      mockInput.value = "abc123456789012345xyz";
+      app.validateBarcodeInput(mockInput);
+
+      expect(mockInput.value).toBe("1234567890123");
+    });
+
+    test("should clear status and border when input is empty", () => {
+      mockInput.value = "";
+      // Setup initial dirty state
+      mockStatusElement.innerHTML = "Error";
+      mockInput.style.borderColor = "red";
+
+      app.validateBarcodeInput(mockInput);
+
+      expect(mockStatusElement.innerHTML).toBe("");
+      expect(mockInput.style.borderColor).toBe("");
+    });
+
+    test("should show warning and set border color for incomplete input (< 13 digits)", () => {
+      mockInput.value = "123456";
+
+      app.validateBarcodeInput(mockInput);
+
+      expect(app.showBarcodeStatus).toHaveBeenCalledWith("Wpisano 6/13 cyfr", "warning");
+      expect(mockInput.style.borderColor).toBe("var(--elmar-warning)");
+    });
+
+    test("should show success and set border color for valid existing product", () => {
+      const barcode = "5901234567890";
+      app.productDatabase[barcode] = "Test Product";
+      mockInput.value = barcode;
+
+      app.validateBarcodeInput(mockInput);
+
+      expect(app.showBarcodeStatus).toHaveBeenCalledWith("Produkt znaleziony: Test Product", "success");
+      expect(mockInput.style.borderColor).toBe("var(--elmar-success)");
+    });
+
+    test("should show warning and set border color for valid new product", () => {
+      const barcode = "5909999999999";
+      // Ensure it's not in DB
+      delete app.productDatabase[barcode];
+      mockInput.value = barcode;
+
+      app.validateBarcodeInput(mockInput);
+
+      expect(app.showBarcodeStatus).toHaveBeenCalledWith("Kod nie istnieje w bazie - zostanie dodany jako nowy produkt", "warning");
+      expect(mockInput.style.borderColor).toBe("var(--elmar-warning)");
+    });
+  });
 });
