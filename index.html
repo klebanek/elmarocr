@@ -4045,18 +4045,16 @@
 
             highlightSearchTerm(text, term) {
                 if (!term) return this.escapeHtml(text);
-
-                // Escape special regex characters in term
                 const escapedTerm = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-                const regex = new RegExp(`(${escapedTerm})`, 'gi');
-
-                // Split text by term, escape each part, and wrap matches in <mark> tags
-                const parts = String(text).split(regex);
-                return parts.map((part, index) => {
-                    const escaped = this.escapeHtml(part);
-                    // Odd indices are the captured matches
-                    return (index % 2 === 1) ? `<mark style="background: yellow; padding: 1px 2px;">${escaped}</mark>` : escaped;
-                }).join('');
+                const parts = text.split(new RegExp(`(${escapedTerm})`, 'gi'));
+                return parts
+                    .map((part) => {
+                        if (part.toLowerCase() === term.toLowerCase()) {
+                            return `<mark style="background: yellow; padding: 1px 2px;">${this.escapeHtml(part)}</mark>`;
+                        }
+                        return this.escapeHtml(part);
+                    })
+                    .join('');
             }
 
             updateDatabaseStats() {
@@ -4188,7 +4186,7 @@
                         .sort(([,a], [,b]) => a.localeCompare(b, 'pl'));
                     
                     sortedProducts.forEach(([barcode, name]) => {
-                        exportData.push([barcode, name]);
+                        exportData.push([this.sanitizeForExcel(barcode), this.sanitizeForExcel(name)]);
                     });
 
                     const ws = XLSX.utils.aoa_to_sheet(exportData);
@@ -5750,6 +5748,14 @@ async initializeScanner() {
                 return text.replace(/[&<>"']/g, (m) => map[m]);
             }
 
+            sanitizeForExcel(value) {
+                if (typeof value !== 'string') return value;
+                if (/^[=+\-@\t\r]/.test(value)) {
+                    return "'" + value;
+                }
+                return value;
+            }
+
             isMobile() {
                 return window.innerWidth <= 768;
             }
@@ -6425,7 +6431,7 @@ Czy jesteś pewien?`;
                     data.push([
                         index + 1,
                         new Date(doc.date).toLocaleDateString('pl-PL'),
-                        doc.worker,
+                        this.sanitizeForExcel(doc.worker),
                         docPositions,
                         docQuantity
                     ]);
