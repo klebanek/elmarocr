@@ -4693,33 +4693,99 @@ async initializeScanner() {
 
             updateProductsTable() {
                 const tbody = document.getElementById('productsTableBody');
+                const products = (this.currentDocument && this.currentDocument.products) || [];
 
-                if (!this.currentDocument || this.currentDocument.products.length === 0) {
+                if (products.length === 0) {
                     tbody.innerHTML = `
                         <tr class="empty-state">
                             <td colspan="7">Brak produktów. Dodaj pierwszy produkt używając skanera lub wprowadź ręcznie.</td>
                         </tr>
                     `;
                     document.getElementById('finishAndSaveBtn').disabled = true;
-                } else {
-                    tbody.innerHTML = this.currentDocument.products.map((product, index) => `
-                        <tr>
-                            <td data-label="LP">${index + 1}</td>
-                            <td data-label="Nazwa produktu">${this.escapeHtml(product.name)}</td>
-                            <td data-label="Kod kreskowy">${product.barcode}</td>
-                            <td data-label="Ilość">${product.quantity}</td>
-                            <td data-label="Termin ważności">${product.expiryDate ? this.formatDate(product.expiryDate) : '-'}</td>
-                            <td data-label="Uwagi" class="product-notes">
-                                ${product.notes ? `<span class="notes-preview" title="${this.escapeHtml(product.notes)}">${this.escapeHtml(product.notes.substring(0, 30))}${product.notes.length > 30 ? '...' : ''}</span>` : '<span class="notes-empty">Brak uwag</span>'}
-                            </td>
-                            <td data-label="Akcje" class="product-actions">
-                                <button class="btn btn--sm btn--outline" onclick="app.editProduct(${index})">Edytuj</button>
-                                <button class="btn btn--sm btn--secondary" onclick="app.removeProduct(${index})">Usuń</button>
-                            </td>
-                        </tr>
-                    `).join('');
-                    document.getElementById('finishAndSaveBtn').disabled = false;
+                    return;
                 }
+
+                document.getElementById('finishAndSaveBtn').disabled = false;
+
+                // Optimization: Use DocumentFragment and createElement for better performance and security
+                const fragment = document.createDocumentFragment();
+
+                products.forEach((product, index) => {
+                    const tr = document.createElement('tr');
+
+                    // LP
+                    const tdLp = document.createElement('td');
+                    tdLp.setAttribute('data-label', 'LP');
+                    tdLp.textContent = index + 1;
+                    tr.appendChild(tdLp);
+
+                    // Name
+                    const tdName = document.createElement('td');
+                    tdName.setAttribute('data-label', 'Nazwa produktu');
+                    tdName.textContent = product.name;
+                    tr.appendChild(tdName);
+
+                    // Barcode
+                    const tdBarcode = document.createElement('td');
+                    tdBarcode.setAttribute('data-label', 'Kod kreskowy');
+                    tdBarcode.textContent = product.barcode;
+                    tr.appendChild(tdBarcode);
+
+                    // Quantity
+                    const tdQuantity = document.createElement('td');
+                    tdQuantity.setAttribute('data-label', 'Ilość');
+                    tdQuantity.textContent = product.quantity;
+                    tr.appendChild(tdQuantity);
+
+                    // Expiry
+                    const tdExpiry = document.createElement('td');
+                    tdExpiry.setAttribute('data-label', 'Termin ważności');
+                    tdExpiry.textContent = product.expiryDate ? this.formatDate(product.expiryDate) : '-';
+                    tr.appendChild(tdExpiry);
+
+                    // Notes
+                    const tdNotes = document.createElement('td');
+                    tdNotes.setAttribute('data-label', 'Uwagi');
+                    tdNotes.className = 'product-notes';
+                    if (product.notes) {
+                        const span = document.createElement('span');
+                        span.className = 'notes-preview';
+                        span.title = product.notes;
+                        span.textContent = product.notes.substring(0, 30) + (product.notes.length > 30 ? '...' : '');
+                        tdNotes.appendChild(span);
+                    } else {
+                        const span = document.createElement('span');
+                        span.className = 'notes-empty';
+                        span.textContent = 'Brak uwag';
+                        tdNotes.appendChild(span);
+                    }
+                    tr.appendChild(tdNotes);
+
+                    // Actions
+                    const tdActions = document.createElement('td');
+                    tdActions.setAttribute('data-label', 'Akcje');
+                    tdActions.className = 'product-actions';
+
+                    const editBtn = document.createElement('button');
+                    editBtn.className = 'btn btn--sm btn--outline';
+                    editBtn.textContent = 'Edytuj';
+                    editBtn.onclick = () => this.editProduct(index);
+                    tdActions.appendChild(editBtn);
+
+                    const removeBtn = document.createElement('button');
+                    removeBtn.className = 'btn btn--sm btn--secondary';
+                    removeBtn.textContent = 'Usuń';
+                    removeBtn.onclick = () => this.removeProduct(index);
+                    tdActions.appendChild(removeBtn);
+
+                    tr.appendChild(tdActions);
+
+                    fragment.appendChild(tr);
+                });
+
+                // Fast clear and append
+                tbody.textContent = '';
+                tbody.appendChild(fragment);
             }
 
             formatDate(dateString) {
