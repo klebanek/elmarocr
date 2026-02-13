@@ -2749,6 +2749,9 @@
                 this.currentBarcode = null;
                 this.showAllDocuments = false; // Domyślnie pokazuj tylko dzisiejsze
                 this.cameraPermissionGranted = false; // Status uprawnień do kamery
+                this.productCount = 0;
+                this.customProductCount = 0;
+                this.customProducts = {};
 
                 this.init();
             }
@@ -2926,11 +2929,15 @@
                     "5903240542185": "Zębacz kawałki wędzone 2kg"
                 };
                 
+                this.productCount = Object.keys(this.productDatabase).length;
+
                 const savedProducts = localStorage.getItem('elmarCustomProducts');
                 if (savedProducts) {
                     try {
-                        const customProducts = JSON.parse(savedProducts);
-                        Object.assign(this.productDatabase, customProducts);
+                        this.customProducts = JSON.parse(savedProducts);
+                        this.customProductCount = Object.keys(this.customProducts).length;
+                        Object.assign(this.productDatabase, this.customProducts);
+                        this.productCount = Object.keys(this.productDatabase).length;
                     } catch (error) {
                         console.error('Error loading custom products:', error);
                     }
@@ -3258,6 +3265,8 @@
                     if (!confirm(`Kod ${barcode} już istnieje w bazie jako "${this.productDatabase[barcode]}". Czy chcesz go zastąpić?`)) {
                         return;
                     }
+                } else {
+                    this.productCount++;
                 }
 
                 this.productDatabase[barcode] = productName;
@@ -3337,20 +3346,12 @@
             }
 
             updateDatabaseStats() {
-                const totalProducts = Object.keys(this.productDatabase).length;
-                const customProducts = this.getCustomProductCount();
-                
-                document.getElementById('productCount').textContent = totalProducts;
-                document.getElementById('customProductCount').textContent = customProducts;
+                document.getElementById('productCount').textContent = this.productCount;
+                document.getElementById('customProductCount').textContent = this.customProductCount;
             }
 
             getCustomProductCount() {
-                try {
-                    const saved = localStorage.getItem('elmarCustomProducts');
-                    return saved ? Object.keys(JSON.parse(saved)).length : 0;
-                } catch (error) {
-                    return 0;
-                }
+                return this.customProductCount;
             }
 
             searchDatabase(searchTerm) {
@@ -3415,7 +3416,6 @@
                     const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
 
                     let importedCount = 0;
-                    const importedProducts = {};
 
                     for (let i = 1; i < jsonData.length; i++) {
                         const row = jsonData[i];
@@ -3424,18 +3424,21 @@
                             const name = String(row[1]).trim();
 
                             if (barcode.length === 13 && /^\d+$/.test(barcode) && name) {
-                                importedProducts[barcode] = name;
+                                if (!this.productDatabase[barcode]) {
+                                    this.productCount++;
+                                }
+                                if (!this.customProducts[barcode]) {
+                                    this.customProductCount++;
+                                }
+                                this.productDatabase[barcode] = name;
+                                this.customProducts[barcode] = name;
                                 importedCount++;
                             }
                         }
                     }
 
                     if (importedCount > 0) {
-                        Object.assign(this.productDatabase, importedProducts);
-                        
-                        Object.entries(importedProducts).forEach(([barcode, name]) => {
-                            this.saveCustomProductToStorage(barcode, name);
-                        });
+                        localStorage.setItem('elmarCustomProducts', JSON.stringify(this.customProducts));
 
                         this.hideLoadingOverlay();
                         this.updateDatabaseStats();
@@ -3812,6 +3815,7 @@ async initializeScanner() {
             deleteDatabaseProduct(barcode) {
                 const productName = this.productDatabase[barcode];
                 if (confirm(`Czy na pewno chcesz usunąć produkt "${productName}" (${barcode}) z bazy?`)) {
+                    this.productCount--;
                     delete this.productDatabase[barcode];
                     this.removeCustomProductFromStorage(barcode);
                     this.showNotification('Produkt został usunięty z bazy', 'success');
@@ -3826,12 +3830,13 @@ async initializeScanner() {
             clearCustomProducts() {
                 if (confirm('Czy na pewno chcesz usunąć wszystkie produkty dodane ręcznie? Tej operacji nie można cofnąć.')) {
                     try {
-                        const saved = localStorage.getItem('elmarCustomProducts');
-                        if (saved) {
-                            const customProducts = JSON.parse(saved);
-                            Object.keys(customProducts).forEach(barcode => {
+                        if (this.customProductCount > 0) {
+                            Object.keys(this.customProducts).forEach(barcode => {
                                 delete this.productDatabase[barcode];
                             });
+                            this.productCount -= this.customProductCount;
+                            this.customProductCount = 0;
+                            this.customProducts = {};
                             localStorage.removeItem('elmarCustomProducts');
                             this.updateDatabaseStats();
                             this.showNotification('Usunięto wszystkie produkty ręczne', 'success');
@@ -3845,12 +3850,10 @@ async initializeScanner() {
 
             removeCustomProductFromStorage(barcode) {
                 try {
-                    let customProducts = {};
-                    const saved = localStorage.getItem('elmarCustomProducts');
-                    if (saved) {
-                        customProducts = JSON.parse(saved);
-                        delete customProducts[barcode];
-                        localStorage.setItem('elmarCustomProducts', JSON.stringify(customProducts));
+                    if (this.customProducts[barcode]) {
+                        delete this.customProducts[barcode];
+                        this.customProductCount--;
+                        localStorage.setItem('elmarCustomProducts', JSON.stringify(this.customProducts));
                     }
                 } catch (error) {
                     console.error('Error removing custom product:', error);
@@ -3923,6 +3926,9 @@ async initializeScanner() {
                     return;
                 }
 
+                if (!this.productDatabase[this.currentBarcode]) {
+                    this.productCount++;
+                }
                 this.productDatabase[this.currentBarcode] = productName;
                 this.saveCustomProductToStorage(this.currentBarcode, productName);
 
@@ -4856,13 +4862,11 @@ async initializeScanner() {
 
             saveCustomProductToStorage(barcode, productName) {
                 try {
-                    let customProducts = {};
-                    const saved = localStorage.getItem('elmarCustomProducts');
-                    if (saved) {
-                        customProducts = JSON.parse(saved);
+                    if (!this.customProducts[barcode]) {
+                        this.customProductCount++;
                     }
-                    customProducts[barcode] = productName;
-                    localStorage.setItem('elmarCustomProducts', JSON.stringify(customProducts));
+                    this.customProducts[barcode] = productName;
+                    localStorage.setItem('elmarCustomProducts', JSON.stringify(this.customProducts));
                 } catch (error) {
                     console.error('Błąd podczas zapisywania produktu:', error);
                 }
@@ -5411,7 +5415,7 @@ Czy jesteś pewien?`;
                 try {
                     const exportData = {
                         documents: this.documents,
-                        customProducts: JSON.parse(localStorage.getItem('elmarCustomProducts') || '{}'),
+                        customProducts: this.customProducts,
                         exportDate: new Date().toISOString(),
                         version: '1.0'
                     };
@@ -5456,7 +5460,13 @@ Czy jesteś pewien?`;
                                 localStorage.setItem('elmarDocuments', JSON.stringify(this.documents));
 
                                 if (importData.customProducts) {
-                                    localStorage.setItem('elmarCustomProducts', JSON.stringify(importData.customProducts));
+                                    this.customProducts = importData.customProducts;
+                                    localStorage.setItem('elmarCustomProducts', JSON.stringify(this.customProducts));
+
+                                    // Merge into productDatabase and update counts
+                                    Object.assign(this.productDatabase, this.customProducts);
+                                    this.productCount = Object.keys(this.productDatabase).length;
+                                    this.customProductCount = Object.keys(this.customProducts).length;
                                 }
 
                                 this.updateDocumentsList();
