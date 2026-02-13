@@ -3304,55 +3304,62 @@ function installApp() {
       }
     });
   }
+    if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then((choiceResult) => {
+            if (choiceResult.outcome === 'accepted') {
+                console.log('Użytkownik zainstalował aplikację');
+            }
+            deferredPrompt = null;
+            dismissInstallBanner();
+            // Hide the install button after installation
+            const installPwaBtn = document.getElementById('installPwaBtn');
+            if (installPwaBtn) {
+                installPwaBtn.style.display = 'none';
+            }
+        });
+    }
 }
 
 // Dismiss install banner
 function dismissInstallBanner() {
-  const banner = document.getElementById("install-banner");
-  if (banner) {
-    banner.remove();
-  }
+    const banner = document.getElementById('install-banner');
+    if (banner) {
+        banner.remove();
+    }
 }
 
 // Handle app updates
-window.addEventListener("appinstalled", () => {
-  console.log("Aplikacja została zainstalowana");
-  dismissInstallBanner();
+if (typeof window !== 'undefined') window.addEventListener('appinstalled', () => {
+    console.log('Aplikacja została zainstalowana');
+    dismissInstallBanner();
 });
 
 // Keyboard shortcuts
-document.addEventListener("keydown", (e) => {
-  if ((e.ctrlKey || e.metaKey) && e.key === "s") {
-    e.preventDefault();
-    if (
-      window.app &&
-      window.app.currentDocument &&
-      window.app.currentDocument.products.length > 0
-    ) {
-      window.app.finishAndSaveDocument();
+if (typeof document !== 'undefined') document.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault();
+        if (window.app && window.app.currentDocument && window.app.currentDocument.products.length > 0) {
+            window.app.finishAndSaveDocument();
+        }
     }
-  }
 
-  if (e.key === "Escape") {
-    const activeModal = document.querySelector(".modal.active");
-    if (activeModal) {
-      activeModal.classList.remove("active");
+    if (e.key === 'Escape') {
+        const activeModal = document.querySelector('.modal.active');
+        if (activeModal) {
+            activeModal.classList.remove('active');
+        }
     }
-  }
 });
 
 // Prevent zoom on double tap for better mobile experience
-document.addEventListener(
-  "touchend",
-  function (event) {
-    const now = new Date().getTime();
+if (typeof document !== 'undefined') document.addEventListener('touchend', function(event) {
+    const now = (new Date()).getTime();
     if (now - lastTouchEnd <= 300) {
-      event.preventDefault();
+        event.preventDefault();
     }
     lastTouchEnd = now;
-  },
-  false,
-);
+}, false);
 
 let lastTouchEnd = 0;
 
